@@ -17,7 +17,7 @@ app.use(express.static(path.join(__dirname, 'public')))
 
 // Cors option
 const options = {
-    origin: ['http://localhost:3000', 'https://19ktpm2-registration-fe.vercel.app'],
+    origin: ['http://localhost:3000', 'https://realtime-learning-fe.vercel.app'],
     methods: 'GET, POST, PUT, DELETE',
     credentials: true,
 }
