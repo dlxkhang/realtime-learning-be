@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "build": "npx tsc",
-    "start": "node dist/bin/index.js",
+    "start": "node dist/index.ts",
     "dev": "nodemon src/bin/index.ts",
     "_lint": "eslint --config ./.eslintrc.js --ext js --ext jsx --ext tsx --ext ts",
     "format": "prettier --write ./**/*.{js,jsx,ts,tsx,css,scss,md,json} --config ./.prettierrc",
