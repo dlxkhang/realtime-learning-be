@@ -1,8 +1,8 @@
 {
     "builds": [
         {
-            "src": "./dist/bin/index.js",
-            "use": "@vercel/node"
+            "src": "package.json",
+            "use": "@now/static-build"
         }
     ],
     "routes": [
