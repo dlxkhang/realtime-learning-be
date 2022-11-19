@@ -1,14 +1,4 @@
 {
-    "builds": [
-        {
-            "src": "src/bin/index.ts",
-            "use": "@vercel/node"
-        }
-    ],
-    "routes": [
-        {
-            "src": "/(.*)",
-            "dest": "/src/bin/index.ts"
-        }
-    ]
+    "buildCommand": "yarn build",
+    "outputDirectory": "dist"
 }
