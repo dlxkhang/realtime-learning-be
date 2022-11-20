@@ -877,6 +877,13 @@
   resolved "https://registry.npmjs.org/@types/cors/-/cors-2.8.12.tgz"
   integrity sha512-vt+kDhq/M2ayberEtJcIN/hxXy1Pk+59g2FV/ZQceeaTyCtCucjL2Q7FXlFjtWn4n15KCr1NE2lNNFhp0lEThw==
 
+"@types/express-list-endpoints@^6.0.0":
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/@types/express-list-endpoints/-/express-list-endpoints-6.0.0.tgz#4efd6203f20eaa90897b58c616659da102901837"
+  integrity sha512-TIi9ggtP1HzV8FmFmwZ/NV3B+qnRw9XslEhG8Qb/50iLDOmq/7radpC8SKXSCvI74FaOrD6I4dF+q+ml5AEYag==
+  dependencies:
+    "@types/express" "*"
+
 "@types/express-serve-static-core@^4.17.18":
   version "4.17.31"
   resolved "https://registry.npmjs.org/@types/express-serve-static-core/-/express-serve-static-core-4.17.31.tgz"
@@ -1811,6 +1818,11 @@ execa@^6.1.0:
     onetime "^6.0.0"
     signal-exit "^3.0.7"
     strip-final-newline "^3.0.0"
+
+express-list-endpoints@^6.0.0:
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/express-list-endpoints/-/express-list-endpoints-6.0.0.tgz#903f000b0cc954bbc35ca44e7aa3917e5292d0c2"
+  integrity sha512-1I30bSVego+AU/eSsX/bV2xrOXW5tFhsuXZp7wZd9396bAAxH7KHaAwLXQYra0Aw33xA67HmNiceGf2SOvXaLg==
 
 express@~4.16.1:
   version "4.16.4"
