@@ -43,6 +43,10 @@ class UserService {
             fullName: user.fullName,
         }
     }
+
+    async getUserList(ids: string[]) {
+        return userModel.find({ _id: { $in: ids } })
+    }
 }
 
 export default new UserService()
