@@ -6,7 +6,9 @@ class GroupRepository {
     async create(newGroup: IGroupDTO): Promise<IGroupDTO> {
         return groupModel.create(newGroup)
     }
-
+    async aggregate(pipeline: any[]): Promise<IGroupDTO[]> {
+        return await groupModel.aggregate(pipeline)
+    }
     async getGroupById(groupId: string): Promise<IGroupDTO> {
         return groupModel.findById(groupId)
     }

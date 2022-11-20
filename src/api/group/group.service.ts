@@ -31,7 +31,45 @@ class GroupService {
         }
         return mapTo(await this.repository.create(newGroup))
     }
-
+    async getGroupHasMember(memberId: string): Promise<IGroup[]> {
+        const pipeline = [
+            {
+                $match: {
+                    deleted: false,
+                },
+            },
+            {
+                $addFields: {
+                    memberId: '$members',
+                },
+            },
+            {
+                $unwind: {
+                    path: '$memberId',
+                    preserveNullAndEmptyArrays: true,
+                },
+            },
+            {
+                $match: {
+                    members: memberId,
+                },
+            },
+            {
+                $group: {
+                    _id: '$_id',
+                    name: { $first: '$name' },
+                    description: { $first: '$description' },
+                    avatar: { $first: '$avatar' },
+                    background: { $first: '$background' },
+                    owner: { $first: '$owner' },
+                    members: { $first: '$members' },
+                    coOwners: { $first: '$coOwners' },
+                },
+            },
+        ]
+        const groups: IGroupDTO[] = await this.repository.aggregate(pipeline)
+        return Promise.all(groups.map(async (group) => mapTo(group)))
+    }
     async getGroup(groupId: string): Promise<IGroup> {
         const group: IGroupDTO = await this.repository.getGroupById(groupId)
         if (!group) {

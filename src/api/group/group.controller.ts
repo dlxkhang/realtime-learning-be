@@ -15,8 +15,8 @@ export default {
         return group
     }),
     getGroup: controllerWrapper(async (event: IEvent) => {
-        const { id } = event.params
-        const group: IGroup = await groupService.getGroup(id)
+        const { groupId } = event.params
+        const group: IGroup = await groupService.getGroup(groupId)
         return group
     }),
     getGroupOwn: controllerWrapper(async (event: IEvent) => {
@@ -27,32 +27,39 @@ export default {
         }
     }),
     addMember: controllerWrapper(async (event: IEvent) => {
-        const { id } = event.params
+        const { groupId } = event.params
         const { userId } = event.body
-        const group: IGroup = await groupService.addMemberToGroup(id, userId)
+        const group: IGroup = await groupService.addMemberToGroup(groupId, userId)
         return group
     }),
     removeMember: controllerWrapper(async (event: IEvent) => {
-        const { id } = event.params
+        const { groupId } = event.params
         const { userId } = event.body
-        const group: IGroup = await groupService.removeMemberFromGroup(id, userId)
+        const group: IGroup = await groupService.removeMemberFromGroup(groupId, userId)
         return group
     }),
+    getGroupJoined: controllerWrapper(async (event: IEvent) => {
+        const { _id } = event.user
+        const groups: IGroup[] = await groupService.getGroupHasMember(_id)
+        return {
+            groups,
+        }
+    }),
     addCoOwner: controllerWrapper(async (event: IEvent) => {
-        const { id } = event.params
+        const { groupId } = event.params
         const { userId } = event.body
-        const group: IGroup = await groupService.addCoOwnerToGroup(id, userId)
+        const group: IGroup = await groupService.addCoOwnerToGroup(groupId, userId)
         return group
     }),
     removeCoOwner: controllerWrapper(async (event: IEvent) => {
-        const { id } = event.params
+        const { groupId } = event.params
         const { userId } = event.body
-        const group: IGroup = await groupService.removeCoOwnerFromGroup(id, userId)
+        const group: IGroup = await groupService.removeCoOwnerFromGroup(groupId, userId)
         return group
     }),
     deleteGroup: controllerWrapper(async (event: IEvent) => {
-        const { id } = event.params
-        const group: IGroup = await groupService.deleteGroup(id)
+        const { groupId } = event.params
+        const group: IGroup = await groupService.deleteGroup(groupId)
         return group
     }),
 }
