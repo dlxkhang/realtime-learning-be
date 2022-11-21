@@ -1,14 +1,14 @@
 /**
  * Module dependencies.
  */
+
+require('dotenv').config()
 import mongoose from 'mongoose'
 import http from 'http'
 import listEndpoints from 'express-list-endpoints'
 import app from '../app'
 import { ENV } from '../common/env'
 import { COLORS } from '../common/color'
-
-require('dotenv').config()
 
 mongoose
     .connect(ENV.MONGODB_URI)
@@ -38,7 +38,6 @@ mongoose
                 console.log(`${COLORS.FgCyan}%s${COLORS.Reset}`, `${method} -> ${path}`)
             })
         })
-
         server.on('error', onError)
     })
     .catch((err) => {
