@@ -1,11 +1,17 @@
-import { IUser } from '../../interfaces'
-import { RegisterDTO } from './dto'
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
+import * as crypto from 'crypto-js'
+import { IUser } from '../../interfaces'
+import { RegisterDTO } from './dto'
+
 import { AUTH_ERROR_CODE, USER_ERROR_CODE } from '../../common/error-code'
 import userService from '../user/user.service'
 import { Config } from '../../config'
 import userTokenModel from '../user/model/user-token.model'
+import userModel from '../user/model/user.model'
+
+import mailService from '../../ultis/mailService'
+import Template from '../../common/templates'
 
 class AuthService {
     async register(registerDto: RegisterDTO) {
@@ -15,9 +21,13 @@ class AuthService {
         if (existedUser) throw USER_ERROR_CODE.EMAIL_ALREADY_EXIST
 
         const hashedPassword = await bcrypt.hash(registerDto.password, 10)
+        const emailToken = crypto.lib.WordArray.random(32).toString()
+        mailService.sendVerificationEmail(Template.verificationEmail(emailToken, registerDto.email))
         return userService.createUser({
             ...registerDto,
             password: hashedPassword,
+            isVerified: false,
+            emailToken: emailToken,
         })
     }
 
@@ -64,6 +74,13 @@ class AuthService {
         const userToken = await userTokenModel.findOne({ token: refreshToken })
         if (!userToken) throw AUTH_ERROR_CODE.INVALID_REFRESH_TOKEN
         await userToken.remove()
+        return { ok: true }
+    }
+
+    async verifiedEmail(emailToken: string) {
+        const user = await userModel.findOne({ emailToken })
+        if (!user) throw AUTH_ERROR_CODE.INVALID_EMAIL_TOKEN
+        await userModel.findOneAndUpdate({ emailToken: emailToken }, { isVerified: true })
         return { ok: true }
     }
 }

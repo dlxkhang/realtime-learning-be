@@ -22,4 +22,8 @@ export const AUTH_ERROR_CODE = {
         statusCode: 401,
         message: 'Invalid refresh token',
     },
+    INVALID_EMAIL_TOKEN: {
+        statusCode: 409,
+        message: 'Invalid email token',
+    },
 }
