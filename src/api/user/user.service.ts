@@ -39,6 +39,10 @@ class UserService {
     async updateProfile(userId: string, updateProfileDto: UpdateProfileDTO): Promise<IUser> {
         return await userModel.findOneAndUpdate({ _id: userId }, updateProfileDto)
     }
+
+    async getUserList(ids: string[]) {
+        return userModel.find({ _id: { $in: ids } })
+    }
 }
 
 export default new UserService()

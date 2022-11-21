@@ -1,6 +1,7 @@
 import mongoose from 'mongoose'
 import { IUser } from '../../../interfaces'
-const Schema = mongoose.Schema
+
+const { Schema } = mongoose
 
 const User = new Schema<IUser>(
     {
