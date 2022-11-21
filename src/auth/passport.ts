@@ -1,13 +1,13 @@
 import passport from 'passport'
 import LocalStrategy from 'passport-local'
 import userService from '../api/user/user.service'
-import { Config } from '../config'
+import { ENV } from '../common/env'
 
 const JwtStrategy = require('passport-jwt').Strategy
 const ExtractJwt = require('passport-jwt').ExtractJwt
 const opts = {
     jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-    secretOrKey: Config.JWT_SECRET,
+    secretOrKey: ENV.JWT_SECRET,
 }
 
 passport.use(
