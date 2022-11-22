@@ -20,13 +20,11 @@ class AuthService {
         const existedUser = await userService.getUserByEmail(registerDto.email)
 
         if (existedUser) throw USER_ERROR_CODE.EMAIL_ALREADY_EXIST
-
-        const hashedPassword = await bcrypt.hash(registerDto.password, 10)
         const emailToken = crypto.lib.WordArray.random(32).toString()
         mailService.sendVerificationEmail(Template.verificationEmail(emailToken, registerDto.email))
         return userService.createUser({
             ...registerDto,
-            password: hashedPassword,
+            password: registerDto.password ? await bcrypt.hash(registerDto.password, 10) : undefined,
             isVerified: false,
             emailToken: emailToken,
         })
@@ -89,7 +87,7 @@ class AuthService {
         const googleUser = jwtDecode<IGoogleUser>(token)
         const newUser: RegisterDTO = {
             fullName: googleUser.name,
-            password: '',
+            password: undefined,
             email: googleUser.email,
         }
         return this.register(newUser)
