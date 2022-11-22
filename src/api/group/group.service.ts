@@ -150,5 +150,13 @@ class GroupService {
         }
         return mapTo(await this.repository.deleteById(groupId))
     }
+
+    async isMemberOfGroup(groupId: string, memberId: string): Promise<boolean> {
+        const group: IGroupDTO = await this.repository.getGroupById(groupId)
+        if (!group) {
+            throw GROUP_ERROR_CODE.GROUP_NOT_FOUND
+        }
+        return group.members.includes(memberId)
+    }
 }
 export default new GroupService()
