@@ -1,7 +1,7 @@
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import * as crypto from 'crypto-js'
-import { IUser } from '../../interfaces'
+import { IUser, IGoogleUser } from '../../interfaces'
 import { RegisterDTO } from './dto'
 
 import { AUTH_ERROR_CODE, USER_ERROR_CODE } from '../../common/error-code'
@@ -12,6 +12,7 @@ import userModel from '../user/model/user.model'
 
 import mailService from '../../ultis/mailService'
 import Template from '../../common/templates'
+import jwtDecode from 'jwt-decode'
 
 class AuthService {
     async register(registerDto: RegisterDTO) {
@@ -82,6 +83,16 @@ class AuthService {
         if (!user) throw AUTH_ERROR_CODE.INVALID_EMAIL_TOKEN
         await userModel.findOneAndUpdate({ emailToken: emailToken }, { isVerified: true })
         return { ok: true }
+    }
+
+    registerGoogleUser(token: string) {
+        const googleUser = jwtDecode<IGoogleUser>(token)
+        const newUser: RegisterDTO = {
+            fullName: googleUser.name,
+            password: '',
+            email: googleUser.email,
+        }
+        return this.register(newUser)
     }
 }
 

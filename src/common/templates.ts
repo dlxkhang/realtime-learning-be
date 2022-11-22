@@ -4,7 +4,7 @@ class Template {
         const msg = {
             to: `${toAddress}`, // Change to your recipient
             from: 'dangthi64788296@gmail.com', // Change to your verified sender
-            subject: 'Sending with SendGrid is Fun',
+            subject: 'Verification Email',
             text: `Click the the link below to verify email
                 Link`,
             html: `<strong>Click the the link below to verify email</strong> 
