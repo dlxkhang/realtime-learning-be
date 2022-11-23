@@ -28,6 +28,11 @@ class UserService {
         if (passwordMatched) return user
     }
 
+    async verifyGoogleToken(email: string) {
+        const user = await this.getUserByEmail(email)
+        if (!user) return false
+        return user
+    }
     async verifyTokenPayload(_id: string) {
         const user = await this.getUserById(_id)
         if (!user) return false

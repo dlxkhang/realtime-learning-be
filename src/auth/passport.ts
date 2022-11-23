@@ -23,6 +23,20 @@ passport.use(
 )
 
 passport.use(
+    'google-login-jwt',
+    new JwtStrategy(opts, async function ({ email }: { email: string }, done: any) {
+        try {
+            const user = await userService.verifyGoogleToken(email)
+            if (user) return done(null, user)
+            return done(null, false, { message: 'Invalid token' })
+        } catch (err) {
+            return done(err, false)
+        }
+    }),
+)
+
+passport.use(
+    'jwt',
     new JwtStrategy(opts, async function ({ _id }: { _id: string }, done: any) {
         try {
             const user = await userService.verifyTokenPayload(_id)
