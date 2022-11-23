@@ -1,4 +1,5 @@
 import mongoose from 'mongoose'
+import constants from '../../constants'
 import { IGroupDTO } from '../../interfaces'
 
 const { Schema } = mongoose
@@ -7,8 +8,8 @@ const Group = new Schema<IGroupDTO>(
     {
         name: { type: String, unique: true, required: true },
         description: { type: String, required: false },
-        avatar: { type: String, required: false },
-        background: { type: String, required: false },
+        avatar: { type: String, required: false, default: constants.DEFAULT_IMAGE.AVATAR },
+        background: { type: String, required: false, default: constants.DEFAULT_IMAGE.BACKGROUND },
         members: [{ type: String, required: true }],
         owner: { type: String, required: true },
         coOwners: [{ type: String, required: true }],

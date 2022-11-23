@@ -13,8 +13,8 @@ class UserService {
         return userModel.findOne({ email })
     }
 
-    async getUserById(_id: string) {
-        return userModel.findById(_id, {}, { lean: true })
+    async getUserById(_id: string, projection: any = {}) {
+        return userModel.findById(_id, projection, { lean: true })
     }
 
     async verifyUser(email: string, password: string) {
@@ -40,8 +40,8 @@ class UserService {
         return await userModel.findOneAndUpdate({ _id: userId }, updateProfileDto)
     }
 
-    async getUserList(ids: string[]) {
-        return userModel.find({ _id: { $in: ids } })
+    async getUserList(ids: string[], projection: any = {}) {
+        return userModel.find({ _id: { $in: ids } }, projection, { lean: true })
     }
 }
 

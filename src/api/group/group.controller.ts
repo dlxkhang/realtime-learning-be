@@ -5,6 +5,7 @@ import groupService from './group.service'
 export default {
     createGroup: controllerWrapper(async (event: IEvent) => {
         const { _id } = event.user
+        console.log('user', _id)
         const { name, description, avatar, background } = event.body
         const group: IGroup = await groupService.createGroup(_id, {
             groupName: name,

@@ -17,10 +17,10 @@ const mapFrom = (group: IGroup): IGroupDTO => {
 }
 const mapTo = async (group: IGroupDTO): Promise<IGroup> => {
     const memberIds = group.members ?? []
-    const members: IUser[] = await userService.getUserList(memberIds)
+    const members: IUser[] = await userService.getUserList(memberIds, { password: 0 })
     const coOwnerIds = group.coOwners ?? []
-    const coOwners: IUser[] = await userService.getUserList(coOwnerIds)
-    const owner: IUser = await userService.getProfileById(group.owner)
+    const coOwners: IUser[] = await userService.getUserList(coOwnerIds, { password: 0 })
+    const owner: IUser = await userService.getUserById(group.owner, { password: 0 })
     return {
         id: group?._id,
         name: group?.name,
