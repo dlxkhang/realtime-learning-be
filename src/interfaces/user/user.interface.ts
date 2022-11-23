@@ -28,4 +28,8 @@ export interface IGoogleUser extends JwtPayload {
     iat: number
     exp: number
     jti: string
+    avatar: string
+    phoneNumber: string
+    gender: string
+    dateOfBirth: string
 }

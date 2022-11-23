@@ -1,18 +1,19 @@
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
+
 import * as crypto from 'crypto-js'
 import { IUser, IGoogleUser } from '../../interfaces'
-import { RegisterDTO } from './dto'
 
 import { AUTH_ERROR_CODE, USER_ERROR_CODE } from '../../common/error-code'
 import userService from '../user/user.service'
-import { Config } from '../../config'
 import userTokenModel from '../user/model/user-token.model'
-import userModel from '../user/model/user.model'
 
+import userModel from '../user/model/user.model'
 import mailService from '../../ultis/mailService'
 import Template from '../../common/templates'
 import jwtDecode from 'jwt-decode'
+import { ENV } from '../../common/env'
+
 
 class AuthService {
     async register(registerDto: RegisterDTO) {
@@ -32,10 +33,10 @@ class AuthService {
 
     async generateTokens(user: IUser) {
         const { _id, email, fullName } = user
-        const accessToken = jwt.sign({ _id, email, fullName }, Config.JWT_SECRET, {
+        const accessToken = jwt.sign({ _id, email, fullName }, ENV.JWT_SECRET, {
             expiresIn: '15m',
         })
-        const refreshToken = jwt.sign({ _id, email, fullName }, Config.JWT_SECRET, {
+        const refreshToken = jwt.sign({ _id, email, fullName }, ENV.JWT_SECRET, {
             expiresIn: '30d',
         })
 
@@ -52,9 +53,9 @@ class AuthService {
         if (!userToken) throw AUTH_ERROR_CODE.INVALID_REFRESH_TOKEN
 
         try {
-            const { _id, email, fullName } = jwt.verify(refreshToken, Config.JWT_SECRET) as IUser
+            const { _id, email, fullName } = jwt.verify(refreshToken, ENV.JWT_SECRET) as IUser
 
-            const newAccessToken = jwt.sign({ _id, email, fullName }, Config.JWT_SECRET, {
+            const newAccessToken = jwt.sign({ _id, email, fullName }, ENV.JWT_SECRET, {
                 expiresIn: '15m',
             })
             return {

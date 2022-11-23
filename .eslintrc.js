@@ -53,7 +53,6 @@ module.exports = {
         'import/no-extraneous-dependencies': 'off',
         'import/no-unresolved': 'off',
         'default-param-last': 'off',
-        
     },
     ignorePatterns: ['node_modules', '.next', 'public'],
 }
