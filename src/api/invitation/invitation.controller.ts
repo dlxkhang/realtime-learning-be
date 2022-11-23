@@ -5,11 +5,12 @@ import invitationService from './invitation.service'
 class InvitationController {
     async findInvitationById(req: Request, res: Response) {
         try {
-            const invitation = await invitationService.findInvitationById(req.params.invitationId)
+            const invitation = await invitationService.findInvitationById(req.params.id)
             res.json(invitation)
         } catch (err) {
+            console.log('err: ', err)
             res.status(err.statusCode ? err.statusCode : 500).send(
-                err.statusCode ? err.message : 'Internal Server Error',
+                err.message ? err.message : 'Internal Server Error',
             )
         }
     }
@@ -23,8 +24,9 @@ class InvitationController {
             })
             res.json(invitation)
         } catch (err) {
+            console.log(err)
             res.status(err.statusCode ? err.statusCode : 500).send(
-                err.statusCode ? err.message : 'Internal Server Error',
+                err.message ? err.message : 'Internal Server Error',
             )
         }
     }

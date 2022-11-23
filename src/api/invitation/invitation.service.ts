@@ -39,7 +39,8 @@ class InvitationService {
         const group = await groupService.getGroup(groupId)
         if (!group) throw INVITATION_ERROR_CODE.GROUP_ID_NOT_FOUND
 
-        if (group.owner._id !== inviterId) throw INVITATION_ERROR_CODE.UNAUTHORIZED_INVITER
+        if (group.owner._id.toString() !== inviterId.toString())
+            throw INVITATION_ERROR_CODE.UNAUTHORIZED_INVITER
 
         const invitation = await invitationModel.findOne(
             {
@@ -55,8 +56,8 @@ class InvitationService {
 
         return await invitationModel.create({
             type: InvitationType.SHARED_INVITATION,
-            inviterId,
-            groupId,
+            inviter: inviterId,
+            group: groupId,
         })
     }
 
