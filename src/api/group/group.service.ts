@@ -31,6 +31,29 @@ class GroupService {
         }
         return mapTo(await this.repository.create(newGroup))
     }
+    async editGroup(groupId: string, callerId: string, groupUpdated?: any): Promise<IGroup> {
+        const group: IGroupDTO = await this.repository.getGroupById(groupId)
+        if (!group) {
+            throw GROUP_ERROR_CODE.GROUP_NOT_FOUND
+        }
+        if (group.owner !== callerId && !group.coOwners.includes(callerId)) {
+            throw GROUP_ERROR_CODE.NOT_HAVING_PERMISSION
+        }
+        const { groupName, groupDescription, groupAvatar, groupBackground } = groupUpdated
+        if (groupName) {
+            group.name = groupName
+        }
+        if (groupDescription) {
+            group.description = groupDescription
+        }
+        if (groupAvatar) {
+            group.avatar = groupAvatar
+        }
+        if (groupBackground) {
+            group.background = groupBackground
+        }
+        return mapTo(await this.repository.updateById(groupId, group))
+    }
     async getGroupHasMember(memberId: string): Promise<IGroup[]> {
         const pipeline = [
             {
@@ -143,10 +166,13 @@ class GroupService {
         return mapTo(await this.repository.updateById(groupId, group))
     }
 
-    async deleteGroup(groupId: string): Promise<IGroup> {
+    async deleteGroup(groupId: string, callerId: string): Promise<IGroup> {
         const group: IGroupDTO = await this.repository.getGroupById(groupId)
         if (!group) {
             throw GROUP_ERROR_CODE.GROUP_NOT_FOUND
+        }
+        if (group.owner !== callerId && !group.coOwners.includes(callerId)) {
+            throw GROUP_ERROR_CODE.NOT_HAVING_PERMISSION
         }
         return mapTo(await this.repository.deleteById(groupId))
     }
