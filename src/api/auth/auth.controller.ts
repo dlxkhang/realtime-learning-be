@@ -1,6 +1,7 @@
 import { Request, Response } from 'express'
 import { IUser } from '../../interfaces'
 import authService from './auth.service'
+import jwtDecode from 'jwt-decode'
 
 class AuthController {
     async register(req: Request, res: Response) {
@@ -8,6 +9,23 @@ class AuthController {
             const user = req.body
             const newUser = await authService.register(user)
             res.json(newUser)
+        } catch (err) {
+            res.status(err.statusCode ? err.statusCode : 500).send(err.statusCode ? err.message : 'Internal Server Error')
+        }
+    }
+
+    async googeLogin(req: Request, res: Response) {
+        try {
+            const user = await authService.extractGoogleInfo(req.body.token)
+            const session = await authService.generateTokens(user as IUser)
+
+            const { _id, email, fullName } = user as IUser
+            res.json({
+                _id,
+                email,
+                fullName,
+                session,
+            })
         } catch (err) {
             res.status(err.statusCode ? err.statusCode : 500).send(err.statusCode ? err.message : 'Internal Server Error')
         }
@@ -42,6 +60,15 @@ class AuthController {
     async logOut(req: Request, res: Response) {
         try {
             const status = await authService.deleteToken(req.body.refreshToken)
+            res.json(status)
+        } catch (err) {
+            res.status(err.statusCode ? err.statusCode : 500).send(err.statusCode ? err.message : 'Internal Server Error')
+        }
+    }
+    async verifyEmailToken(req: Request, res: Response) {
+        try {
+            const token = req.params.token
+            const status = await authService.verifiedEmail(token)
             res.json(status)
         } catch (err) {
             res.status(err.statusCode ? err.statusCode : 500).send(err.statusCode ? err.message : 'Internal Server Error')

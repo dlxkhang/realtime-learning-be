@@ -22,74 +22,8 @@ export const AUTH_ERROR_CODE = {
         statusCode: 401,
         message: 'Invalid refresh token',
     },
-}
-
-export const GROUP_ERROR_CODE = {
-    GROUP_NOT_FOUND: {
-        statusCode: 400,
-        message: 'Group not found',
-    },
-    GROUP_ALREADY_EXIST: {
+    INVALID_EMAIL_TOKEN: {
         statusCode: 409,
-        message: 'Group already exist',
-    },
-    MISSING_GROUP_NAME: {
-        statusCode: 400,
-        message: 'Missing group name',
-    },
-    MISSING_GROUP_OWNER: {
-        statusCode: 400,
-        message: 'Missing group owner',
-    },
-    MEMBER_ALREADY_IN_GROUP: {
-        statusCode: 400,
-        message: 'Member already in group',
-    },
-    MEMBER_NOT_IN_GROUP: {
-        statusCode: 400,
-        message: 'Member not in group',
-    },
-    CO_OWNER_ALREADY_IN_GROUP: {
-        statusCode: 400,
-        message: 'Co-owner already in group',
-    },
-    CO_OWNER_NOT_IN_GROUP: {
-        statusCode: 400,
-        message: 'Co-owner not in group',
-    },
-}
-
-export const INVITATION_ERROR_CODE = {
-    INVITER_NOT_FOUND: {
-        statusCode: 400,
-        message: 'Inviter not found',
-    },
-    GROUP_ID_NOT_FOUND: {
-        statusCode: 400,
-        message: 'Invalid group ID',
-    },
-    UNAUTHORIZED_INVITER: {
-        statusCode: 401,
-        message: 'Unauthorized inviter',
-    },
-    INVITATION_ID_NOT_FOUND: {
-        statusCode: 400,
-        message: 'Invitation ID not found',
-    },
-    INVITEE_NOT_FOUND: {
-        statusCode: 400,
-        message: 'Invitee not found',
-    },
-    INVALID_INVITEE_EMAIL: {
-        statusCode: 400,
-        message: 'Invalid invitee email',
-    },
-    INVITER_DUPLICATED: {
-        statusCode: 400,
-        message: 'Invitee cannot be inviter',
-    },
-    INVITEE_DUPLICATED: {
-        statusCode: 400,
-        message: 'Invitee already a member of this group',
+        message: 'Invalid email token',
     },
 }

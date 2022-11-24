@@ -1,19 +1,16 @@
 /**
  * Module dependencies.
  */
-
 require('dotenv').config()
 import mongoose from 'mongoose'
 import http from 'http'
-import listEndpoints from 'express-list-endpoints'
 import app from '../app'
 import { ENV } from '../common/env'
-import { COLORS } from '../common/color'
 
 mongoose
     .connect(ENV.MONGODB_URI)
     .then(() => {
-        console.log(`${COLORS.FgBlack}${COLORS.BgMagenta}%s${COLORS.Reset}`, 'Connected to DB successfully')
+        console.log('Connected to DB successfully')
         /**
          * Get port from environment and store in Express.
          */
@@ -30,14 +27,8 @@ mongoose
         /**
          * Listen on provided port, on all network interfaces.
          */
-        server.listen(port, () => {
-            console.log(`${COLORS.FgBlack}${COLORS.BgYellow}%s${COLORS.Reset}`, `Server is running on port ${port}`)
-            listEndpoints(app).forEach((endpoint: { path: string; methods: string[] }) => {
-                const method = endpoint.methods[0]?.toUpperCase()
-                const { path } = endpoint
-                console.log(`${COLORS.FgCyan}%s${COLORS.Reset}`, `${method} -> ${path}`)
-            })
-        })
+
+        server.listen(port)
         server.on('error', onError)
     })
     .catch((err) => {
@@ -74,16 +65,16 @@ function onError(error: any) {
         throw error
     }
     const port = normalizePort(ENV.PORT || '3300')
-    const bind = typeof port === 'string' ? `Pipe ${port}` : `Port ${port}`
+    const bind = typeof port === 'string' ? 'Pipe ' + port : 'Port ' + port
 
     // handle specific listen errors with friendly messages
     switch (error.code) {
         case 'EACCES':
-            console.error(`${bind} requires elevated privileges`)
+            console.error(bind + ' requires elevated privileges')
             process.exit(1)
             break
         case 'EADDRINUSE':
-            console.error(`${bind} is already in use`)
+            console.error(bind + ' is already in use')
             process.exit(1)
             break
         default:

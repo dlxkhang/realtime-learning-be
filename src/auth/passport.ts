@@ -1,18 +1,17 @@
 import passport from 'passport'
 import LocalStrategy from 'passport-local'
 import userService from '../api/user/user.service'
-import { ENV } from '../common/env'
+import { Config } from '../config'
 
 const JwtStrategy = require('passport-jwt').Strategy
-const { ExtractJwt } = require('passport-jwt')
-
+const ExtractJwt = require('passport-jwt').ExtractJwt
 const opts = {
     jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-    secretOrKey: ENV.JWT_SECRET,
+    secretOrKey: Config.JWT_SECRET,
 }
 
 passport.use(
-    new LocalStrategy.Strategy({ usernameField: 'email' }, async (username, password, cb) => {
+    new LocalStrategy.Strategy({ usernameField: 'email' }, async function verify(username, password, cb) {
         try {
             const user = await userService.verifyUser(username, password)
             if (user) return cb(null, user)
@@ -24,7 +23,21 @@ passport.use(
 )
 
 passport.use(
-    new JwtStrategy(opts, async ({ _id }: { _id: string }, done: any) => {
+    'google-login-jwt',
+    new JwtStrategy(opts, async function ({ email }: { email: string }, done: any) {
+        try {
+            const user = await userService.verifyGoogleToken(email)
+            if (user) return done(null, user)
+            return done(null, false, { message: 'Invalid token' })
+        } catch (err) {
+            return done(err, false)
+        }
+    }),
+)
+
+passport.use(
+    'jwt',
+    new JwtStrategy(opts, async function ({ _id }: { _id: string }, done: any) {
         try {
             const user = await userService.verifyTokenPayload(_id)
             if (user) return done(null, user)
