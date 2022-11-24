@@ -74,15 +74,6 @@ class AuthController {
             res.status(err.statusCode ? err.statusCode : 500).send(err.statusCode ? err.message : 'Internal Server Error')
         }
     }
-    async registerByGoogle(req: Request, res: Response) {
-        try {
-            const jwtToken = req.body.token
-            const newUser = await authService.registerGoogleUser(jwtToken)
-            res.json(newUser)
-        } catch (err) {
-            res.status(err.statusCode ? err.statusCode : 500).send(err.statusCode ? err.message : 'Internal Server Error')
-        }
-    }
 }
 
 export default new AuthController()
