@@ -1,10 +1,12 @@
-import { AcceptInvitationDTO, CreateSharedInvitationDTO } from './dto'
+import { AcceptInvitationDTO, CreateEmailInvitationDTO, CreateSharedInvitationDTO } from './dto'
 import userService from '../user/user.service'
 import { INVITATION_ERROR_CODE } from '../../common/error-code'
 import groupService from '../group/group.service'
 import invitationModel from './model/invitation.model'
 import { InvitationType } from '../../common/enum'
 import { IInvitation } from '../../interfaces'
+import { ENV } from '../../common/env'
+import { generateEmailInvitationLink } from '../../utils'
 
 class InvitationService {
     async findInvitationById(id: string): Promise<IInvitation> {
@@ -95,6 +97,46 @@ class InvitationService {
         await groupService.addMemberToGroup(invitation.group.toString(), inviteeId)
 
         return invitation
+    }
+
+    async createEmailInvitation(createEmailInvitationDto: CreateEmailInvitationDTO): Promise<{
+        ok: true
+    }> {
+        const { inviterId, groupId, inviteeEmails } = createEmailInvitationDto
+        const inviter = await userService.getUserById(inviterId)
+        if (!inviter) throw INVITATION_ERROR_CODE.INVITER_NOT_FOUND
+
+        const group = await groupService.getGroup(groupId)
+        if (!group) throw INVITATION_ERROR_CODE.GROUP_ID_NOT_FOUND
+
+        if (group.owner._id.toString() !== inviterId.toString())
+            throw INVITATION_ERROR_CODE.UNAUTHORIZED_INVITER
+
+        await Promise.all(
+            inviteeEmails.map((inviteeEmail: string) => {
+                const invitation = await invitationModel.create({
+                    type: InvitationType.EMAIL_INVITATION,
+                    inviter: inviterId,
+                    group: groupId,
+                    inviteeEmail,
+                })
+
+                const invitationLink = generateEmailInvitationLink(invitation._id)
+                const inviterName = inviter.fullName || inviter.email
+                return await this.sendGridService.send(
+                    EMAIL_LIST.INVITATION(
+                        inviteeEmails[i],
+                        group.name,
+                        inviterName,
+                        invitationLink,
+                    ),
+                )
+            }),
+        )
+
+        return {
+            ok: true,
+        }
     }
 }
 
