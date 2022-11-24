@@ -1,5 +1,4 @@
 {
-
   "name": "realtime-learning-be",
   "version": "0.0.0",
   "private": true,
@@ -81,5 +80,4 @@
       "not op_mini all"
     ]
   }
-
 }

@@ -1,7 +1,6 @@
 import bcrypt from 'bcrypt'
 import { USER_ERROR_CODE } from '../../common/error-code'
-import { IUser } from '../../interfaces'
-import { CreateUserDTO, UpdateProfileDTO } from './dto'
+import { CreateUserDTO } from './dto'
 import userModel from './model/user.model'
 
 class UserService {
@@ -10,11 +9,16 @@ class UserService {
     }
 
     async getUserByEmail(email: string) {
+        try {
+            const test = await userModel.findOne({ email })
+        } catch (error) {
+            console.log(error)
+        }
         return userModel.findOne({ email })
     }
 
-    async getUserById(_id: string, projection: any = {}) {
-        return userModel.findById(_id, projection, { lean: true })
+    async getUserById(_id: string) {
+        return userModel.findById(_id)
     }
 
     async verifyUser(email: string, password: string) {
@@ -35,18 +39,14 @@ class UserService {
         return user
     }
 
-    async getProfileById(_id: string): Promise<IUser> {
+    async getProfileById(_id: string) {
         const user = await this.getUserById(_id)
         if (!user) throw USER_ERROR_CODE.ID_NOT_FOUND
-        return user
-    }
-
-    async updateProfile(userId: string, updateProfileDto: UpdateProfileDTO): Promise<IUser> {
-        return await userModel.findOneAndUpdate({ _id: userId }, updateProfileDto)
-    }
-
-    async getUserList(ids: string[], projection: any = {}) {
-        return userModel.find({ _id: { $in: ids } }, projection, { lean: true })
+        return {
+            _id: user._id,
+            email: user.email,
+            fullName: user.fullName,
+        }
     }
 }
 

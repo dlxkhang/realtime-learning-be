@@ -1,18 +1,17 @@
 import passport from 'passport'
 import LocalStrategy from 'passport-local'
 import userService from '../api/user/user.service'
-import { ENV } from '../common/env'
+import { Config } from '../config'
 
 const JwtStrategy = require('passport-jwt').Strategy
-const { ExtractJwt } = require('passport-jwt')
-
+const ExtractJwt = require('passport-jwt').ExtractJwt
 const opts = {
     jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-    secretOrKey: ENV.JWT_SECRET,
+    secretOrKey: Config.JWT_SECRET,
 }
 
 passport.use(
-    new LocalStrategy.Strategy({ usernameField: 'email' }, async (username, password, cb) => {
+    new LocalStrategy.Strategy({ usernameField: 'email' }, async function verify(username, password, cb) {
         try {
             const user = await userService.verifyUser(username, password)
             if (user) return cb(null, user)
