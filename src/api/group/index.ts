@@ -20,7 +20,7 @@ router.get(
 )
 router.get('/getOwn', passport.authenticate('jwt', { session: false }), groupController.getGroupOwn)
 router.get(
-    '/getGroupJoined',
+    '/groupJoined',
     passport.authenticate('jwt', { session: false }),
     groupController.getGroupJoined,
 )
