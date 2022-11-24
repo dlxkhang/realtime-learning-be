@@ -93,8 +93,17 @@ class AuthService {
         return this.register(newUser)
     }
     async extractGoogleInfo(token: string) {
-        const googleUser = await jwtDecode<IGoogleUser>(token)
+        const googleUser = jwtDecode<IGoogleUser>(token)
+        if (!userModel.exists({ email: googleUser.email })) {
+            const newUser: RegisterDTO = {
+                fullName: googleUser.name,
+                password: undefined,
+                email: googleUser.email,
+            }
+            await this.register(newUser)
+        }
         const user = await userModel.findOne({ email: googleUser.email })
+
         const User: IUser = {
             _id: user._id,
             fullName: user.fullName,
