@@ -1,3 +1,2 @@
-export const Config = {
-    JWT_SECRET: 'secret',
-}
+export * from './cloudinary'
+export * from './multer'
