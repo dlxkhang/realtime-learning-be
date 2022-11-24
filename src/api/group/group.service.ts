@@ -34,25 +34,18 @@ class GroupService {
     async editGroup(groupId: string, callerId: string, groupUpdated?: any): Promise<IGroup> {
         const group: IGroupDTO = await this.repository.getGroupById(groupId)
         if (!group) {
+            console.log('Group not found')
             throw GROUP_ERROR_CODE.GROUP_NOT_FOUND
         }
-        if (group.owner !== callerId && !group.coOwners.includes(callerId)) {
+        if (
+            group.owner !== callerId?.toString() &&
+            !group.coOwners.includes(callerId?.toString())
+        ) {
+            console.log('Caller is not owner or co-owner')
             throw GROUP_ERROR_CODE.NOT_HAVING_PERMISSION
         }
-        const { groupName, groupDescription, groupAvatar, groupBackground } = groupUpdated
-        if (groupName) {
-            group.name = groupName
-        }
-        if (groupDescription) {
-            group.description = groupDescription
-        }
-        if (groupAvatar) {
-            group.avatar = groupAvatar
-        }
-        if (groupBackground) {
-            group.background = groupBackground
-        }
-        return mapTo(await this.repository.updateById(groupId, group))
+        const updatedGroup = await this.repository.updateById(groupId, groupUpdated)
+        return mapTo(updatedGroup)
     }
     async getGroupHasMember(memberId: string): Promise<IGroup[]> {
         const pipeline = [
@@ -169,9 +162,14 @@ class GroupService {
     async deleteGroup(groupId: string, callerId: string): Promise<IGroup> {
         const group: IGroupDTO = await this.repository.getGroupById(groupId)
         if (!group) {
+            console.log('Group not found')
             throw GROUP_ERROR_CODE.GROUP_NOT_FOUND
         }
-        if (group.owner !== callerId && !group.coOwners.includes(callerId)) {
+        if (
+            group.owner !== callerId?.toString() &&
+            !group.coOwners.includes(callerId?.toString())
+        ) {
+            console.log('Caller is not owner or co-owner')
             throw GROUP_ERROR_CODE.NOT_HAVING_PERMISSION
         }
         return mapTo(await this.repository.deleteById(groupId))

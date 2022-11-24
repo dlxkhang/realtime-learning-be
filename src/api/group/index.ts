@@ -8,7 +8,7 @@ router.post(
     passport.authenticate('jwt', { session: false }),
     groupController.createGroup,
 )
-router.post(
+router.put(
     '/edit/:groupId',
     passport.authenticate('jwt', { session: false }),
     groupController.editGroup,

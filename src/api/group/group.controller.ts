@@ -19,12 +19,26 @@ export default {
         const { groupId } = event.params
         const { _id } = event.user
         const { name, description, avatar, background } = event.body
-        const group: IGroup = await groupService.editGroup(groupId, _id, {
-            groupName: name,
-            groupDescription: description,
-            groupAvatar: avatar,
-            groupBackground: background,
-        })
+        const updatedGroup: {
+            name?: string
+            description?: string
+            avatar?: string
+            background?: string
+        } = {}
+        if (name) {
+            updatedGroup['name'] = name
+        }
+        if (description) {
+            updatedGroup['description'] = description
+        }
+        if (avatar) {
+            updatedGroup['avatar'] = avatar
+        }
+        if (background) {
+            updatedGroup['background'] = background
+        }
+        console.log('updatedGroup', updatedGroup)
+        const group: IGroup = await groupService.editGroup(groupId, _id, updatedGroup)
         return group
     }),
     getGroup: controllerWrapper(async (event: IEvent) => {
