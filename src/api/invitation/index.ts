@@ -6,12 +6,17 @@ const router = express.Router()
 router.get(
     '/:id',
     passport.authenticate('jwt', { session: false }),
-    invitationController.findInvitationById,
+    invitationController.getInvitation,
 )
 router.post(
     '/create-shared-invitation',
     passport.authenticate('jwt', { session: false }),
     invitationController.createSharedInvitation,
+)
+router.post(
+    '/create-email-invitations',
+    passport.authenticate('jwt', { session: false }),
+    invitationController.createEmailInvitations,
 )
 router.post(
     '/accept-invitation',

@@ -1,15 +1,24 @@
 import { Request, Response } from 'express'
 import { IUser } from '../../interfaces'
 import invitationService from './invitation.service'
+import { mapTo } from './mapper'
 
 class InvitationController {
-    async findInvitationById(req: Request, res: Response) {
+    async getInvitation(req: Request, res: Response) {
         try {
-            const invitation = await invitationService.findInvitationById(req.params.invitationId)
-            res.json(invitation)
+            const { _id } = req.user as IUser
+            const { invitation, ...rest } = await invitationService.getInvitation(
+                _id,
+                req.params.id,
+            )
+            const transformedInvitation = await mapTo(invitation)
+            res.json({
+                invitation: transformedInvitation,
+                ...rest,
+            })
         } catch (err) {
             res.status(err.statusCode ? err.statusCode : 500).send(
-                err.statusCode ? err.message : 'Internal Server Error',
+                err.message ? err.message : 'Internal Server Error',
             )
         }
     }
@@ -21,10 +30,27 @@ class InvitationController {
                 inviterId: _id,
                 groupId: req.body.groupId,
             })
-            res.json(invitation)
+            const transformedInvitation = await mapTo(invitation)
+            res.json(transformedInvitation)
         } catch (err) {
             res.status(err.statusCode ? err.statusCode : 500).send(
-                err.statusCode ? err.message : 'Internal Server Error',
+                err.message ? err.message : 'Internal Server Error',
+            )
+        }
+    }
+
+    async createEmailInvitations(req: Request, res: Response) {
+        try {
+            const { _id } = req.user as IUser
+            const status = await invitationService.createEmailInvitations({
+                inviterId: _id,
+                groupId: req.body.groupId,
+                inviteeEmails: req.body.inviteeEmails,
+            })
+            res.json(status)
+        } catch (err) {
+            res.status(err.statusCode ? err.statusCode : 500).send(
+                err.message ? err.message : 'Internal Server Error',
             )
         }
     }
@@ -36,7 +62,8 @@ class InvitationController {
                 inviteeId: _id,
                 invitationId: req.body.invitationId,
             })
-            res.json(invitation)
+            const transformedInvitation = await mapTo(invitation)
+            res.json(transformedInvitation)
         } catch (err) {
             res.status(err.statusCode ? err.statusCode : 500).send(
                 err.statusCode ? err.message : 'Internal Server Error',
