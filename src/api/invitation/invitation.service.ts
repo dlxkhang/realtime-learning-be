@@ -5,13 +5,20 @@ import groupService from '../group/group.service'
 import invitationModel from './model/invitation.model'
 import { InvitationType } from '../../common/enum'
 import { IInvitation } from '../../interfaces'
-import { ENV } from '../../common/env'
 import { generateEmailInvitationLink } from '../../utils'
+import templates from '../../common/templates'
+import mailService from '../../utils/mail.util'
 
 class InvitationService {
-    async findInvitationById(id: string): Promise<IInvitation> {
+    async getInvitation(
+        userId: string,
+        invitationId: string,
+    ): Promise<{
+        invitation: IInvitation
+        isMemberOfGroup: boolean
+    }> {
         const invitation = await invitationModel.findById(
-            id,
+            invitationId,
             {},
             {
                 populate: [
@@ -28,7 +35,21 @@ class InvitationService {
             },
         )
         if (!invitation) throw INVITATION_ERROR_CODE.INVITATION_ID_NOT_FOUND
-        return invitation
+
+        const isMemberOfGroup = await groupService.isMemberOfGroup(
+            invitation.group._id.toString(),
+            userId,
+        )
+        if (isMemberOfGroup)
+            return {
+                invitation,
+                isMemberOfGroup: true,
+            }
+
+        return {
+            invitation,
+            isMemberOfGroup: false,
+        }
     }
 
     async createSharedInvitation(
@@ -50,17 +71,19 @@ class InvitationService {
                 group: groupId,
             },
             {},
-            {},
+            { lean: true },
         )
         if (invitation)
             // If invitation exist and hasn't expired yet => return it, else create a new one
             return invitation
 
-        return await invitationModel.create({
+        const newInvitation = await invitationModel.create({
             type: InvitationType.SHARED_INVITATION,
             inviter: inviterId,
             group: groupId,
         })
+        console.log('newInvitation.toObject(): ', newInvitation.toObject())
+        return newInvitation.toObject()
     }
 
     async validateInvitation(inviteeId: string, invitationId: string): Promise<IInvitation> {
@@ -99,7 +122,7 @@ class InvitationService {
         return invitation
     }
 
-    async createEmailInvitation(createEmailInvitationDto: CreateEmailInvitationDTO): Promise<{
+    async createEmailInvitations(createEmailInvitationDto: CreateEmailInvitationDTO): Promise<{
         ok: true
     }> {
         const { inviterId, groupId, inviteeEmails } = createEmailInvitationDto
@@ -113,7 +136,7 @@ class InvitationService {
             throw INVITATION_ERROR_CODE.UNAUTHORIZED_INVITER
 
         await Promise.all(
-            inviteeEmails.map((inviteeEmail: string) => {
+            inviteeEmails.map(async (inviteeEmail: string) => {
                 const invitation = await invitationModel.create({
                     type: InvitationType.EMAIL_INVITATION,
                     inviter: inviterId,
@@ -123,11 +146,11 @@ class InvitationService {
 
                 const invitationLink = generateEmailInvitationLink(invitation._id)
                 const inviterName = inviter.fullName || inviter.email
-                return await this.sendGridService.send(
-                    EMAIL_LIST.INVITATION(
-                        inviteeEmails[i],
-                        group.name,
+                return await mailService.send(
+                    templates.invitationEmail(
+                        inviteeEmail,
                         inviterName,
+                        group.name,
                         invitationLink,
                     ),
                 )

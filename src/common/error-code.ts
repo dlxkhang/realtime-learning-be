@@ -101,3 +101,14 @@ export const INVITATION_ERROR_CODE = {
         message: 'Invitee already a member of this group',
     },
 }
+
+export const GENERAL_ERROR_CODE = {
+    UNKNOWN_ERROR: {
+        statusCode: 400,
+        message: 'Bad request',
+    },
+    MAIL_SERVICE_ERROR: {
+        statusCode: 400,
+        message: 'Mail service error',
+    },
+}
