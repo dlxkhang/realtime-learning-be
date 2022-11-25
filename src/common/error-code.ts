@@ -22,6 +22,10 @@ export const AUTH_ERROR_CODE = {
         statusCode: 401,
         message: 'Invalid refresh token',
     },
+    INVALID_EMAIL_TOKEN: {
+        statusCode: 409,
+        message: 'Invalid email token',
+    },
 }
 
 export const GROUP_ERROR_CODE = {
@@ -56,6 +60,10 @@ export const GROUP_ERROR_CODE = {
     CO_OWNER_NOT_IN_GROUP: {
         statusCode: 400,
         message: 'Co-owner not in group',
+    },
+    NOT_HAVING_PERMISSION: {
+        statusCode: 400,
+        message: 'Not having permission',
     },
 }
 

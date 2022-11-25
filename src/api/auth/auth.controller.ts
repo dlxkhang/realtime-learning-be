@@ -9,7 +9,9 @@ class AuthController {
             const newUser = await authService.register(user)
             res.json(newUser)
         } catch (err) {
-            res.status(err.statusCode ? err.statusCode : 500).send(err.statusCode ? err.message : 'Internal Server Error')
+            res.status(err.statusCode ? err.statusCode : 500).send(
+                err.statusCode ? err.message : 'Internal Server Error',
+            )
         }
     }
 
@@ -25,7 +27,9 @@ class AuthController {
                 session,
             })
         } catch (err) {
-            res.status(err.statusCode ? err.statusCode : 500).send(err.statusCode ? err.message : 'Internal Server Error')
+            res.status(err.statusCode ? err.statusCode : 500).send(
+                err.statusCode ? err.message : 'Internal Server Error',
+            )
         }
     }
 
@@ -35,7 +39,9 @@ class AuthController {
             const session = await authService.refreshAccessToken(refreshToken)
             res.json({ session })
         } catch (err) {
-            res.status(err.statusCode ? err.statusCode : 500).send(err.statusCode ? err.message : 'Internal Server Error')
+            res.status(err.statusCode ? err.statusCode : 500).send(
+                err.statusCode ? err.message : 'Internal Server Error',
+            )
         }
     }
 
@@ -44,7 +50,38 @@ class AuthController {
             const status = await authService.deleteToken(req.body.refreshToken)
             res.json(status)
         } catch (err) {
-            res.status(err.statusCode ? err.statusCode : 500).send(err.statusCode ? err.message : 'Internal Server Error')
+            res.status(err.statusCode ? err.statusCode : 500).send(
+                err.statusCode ? err.message : 'Internal Server Error',
+            )
+        }
+    }
+    async googeLogin(req: Request, res: Response) {
+        try {
+            const user = await authService.extractGoogleInfo(req.body.token)
+            const session = await authService.generateTokens(user as IUser)
+
+            const { _id, email, fullName } = user as IUser
+            res.json({
+                _id,
+                email,
+                fullName,
+                session,
+            })
+        } catch (err) {
+            res.status(err.statusCode ? err.statusCode : 500).send(
+                err.statusCode ? err.message : 'Internal Server Error',
+            )
+        }
+    }
+    async verifyEmailToken(req: Request, res: Response) {
+        try {
+            const token = req.params.token
+            const status = await authService.verifiedEmail(token)
+            res.json(status)
+        } catch (err) {
+            res.status(err.statusCode ? err.statusCode : 500).send(
+                err.statusCode ? err.message : 'Internal Server Error',
+            )
         }
     }
 }

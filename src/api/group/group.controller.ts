@@ -15,6 +15,32 @@ export default {
         })
         return group
     }),
+    editGroup: controllerWrapper(async (event: IEvent) => {
+        const { groupId } = event.params
+        const { _id } = event.user
+        const { name, description, avatar, background } = event.body
+        const updatedGroup: {
+            name?: string
+            description?: string
+            avatar?: string
+            background?: string
+        } = {}
+        if (name) {
+            updatedGroup['name'] = name
+        }
+        if (description) {
+            updatedGroup['description'] = description
+        }
+        if (avatar) {
+            updatedGroup['avatar'] = avatar
+        }
+        if (background) {
+            updatedGroup['background'] = background
+        }
+        console.log('updatedGroup', updatedGroup)
+        const group: IGroup = await groupService.editGroup(groupId, _id, updatedGroup)
+        return group
+    }),
     getGroup: controllerWrapper(async (event: IEvent) => {
         const { groupId } = event.params
         const group: IGroup = await groupService.getGroup(groupId)
@@ -60,7 +86,8 @@ export default {
     }),
     deleteGroup: controllerWrapper(async (event: IEvent) => {
         const { groupId } = event.params
-        const group: IGroup = await groupService.deleteGroup(groupId)
+        const { _id } = event.user
+        const group: IGroup = await groupService.deleteGroup(groupId, _id)
         return group
     }),
 }
