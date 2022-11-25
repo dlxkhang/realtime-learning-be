@@ -137,23 +137,39 @@ class InvitationService {
 
         await Promise.all(
             inviteeEmails.map(async (inviteeEmail: string) => {
-                const invitation = await invitationModel.create({
-                    type: InvitationType.EMAIL_INVITATION,
-                    inviter: inviterId,
-                    group: groupId,
-                    inviteeEmail,
-                })
+                const session = await invitationModel.startSession()
+                session.startTransaction()
+                try {
+                    const invitation = await invitationModel.create(
+                        {
+                            type: InvitationType.EMAIL_INVITATION,
+                            inviter: inviterId,
+                            group: groupId,
+                            inviteeEmail,
+                        },
+                        { session },
+                    )
 
-                const invitationLink = generateEmailInvitationLink(invitation._id)
-                const inviterName = inviter.fullName || inviter.email
-                return await mailService.send(
-                    templates.invitationEmail(
-                        inviteeEmail,
-                        inviterName,
-                        group.name,
-                        invitationLink,
-                    ),
-                )
+                    const invitationLink = generateEmailInvitationLink(invitation[0]._id)
+                    const inviterName = inviter.fullName || inviter.email
+                    await mailService.send(
+                        templates.invitationEmail(
+                            inviteeEmail,
+                            inviterName,
+                            group.name,
+                            invitationLink,
+                        ),
+                    )
+
+                    await session.commitTransaction()
+                    session.endSession()
+                } catch (error) {
+                    // If an error occurred, abort the whole transaction and
+                    // undo any changes that might have happened
+                    await session.abortTransaction()
+                    session.endSession()
+                    throw error
+                }
             }),
         )
 
