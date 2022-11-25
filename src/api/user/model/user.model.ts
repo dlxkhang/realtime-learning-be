@@ -8,7 +8,10 @@ const User = new Schema<IUser>(
     {
         email: { type: String, unique: true, required: true },
         fullName: { type: String, required: true },
-        password: { type: String, required: true },
+        password: { type: String },
+        // email verification
+        isVerified: { type: Boolean },
+        emailToken: { type: String },
         avatar: { type: String, default: constants.DEFAULT_IMAGE.AVATAR },
         phoneNumber: { type: String },
         gender: { type: String },
