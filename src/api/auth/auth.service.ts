@@ -21,7 +21,8 @@ class AuthService {
 
         if (existedUser) throw USER_ERROR_CODE.EMAIL_ALREADY_EXIST
         const emailToken = crypto.lib.WordArray.random(32).toString()
-        mailService.send(Template.verificationEmail(emailToken, registerDto.email))
+
+        await mailService.send(Template.verificationEmail(emailToken, registerDto.email))
         return userService.createUser({
             ...registerDto,
             password: registerDto.password
