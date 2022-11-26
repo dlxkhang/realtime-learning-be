@@ -77,9 +77,15 @@ export default {
     addMember: controllerWrapper(async (event: IEvent) => {
         const { groupId } = event.params
         const { userId } = event.body
+        const user = event.user
+        const role = await groupService.roleOf(user, groupId)
+        const userRole = new RoleImpl(user, role)
         const group: IGroupDTO = await groupService.addMemberToGroup(groupId, userId)
         const groupDetail: IGroup = await mapToDetail(group)
-        return groupDetail
+        return {
+            group: groupDetail,
+            permission: userRole.getPermission(),
+        }
     }),
     removeMember: controllerWrapper(async (event: IEvent) => {
         const { groupId } = event.params
@@ -87,10 +93,13 @@ export default {
         const role = await groupService.roleOf(user, groupId)
         const userRole = new RoleImpl(user, role)
         if (userRole.hasPermission(Privilege.KICKING)) {
-            const { userId } = event.body
-            const group: IGroupDTO = await groupService.removeMemberFromGroup(groupId, userId)
+            const { memberId } = event.body
+            const group: IGroupDTO = await groupService.removeMemberFromGroup(groupId, memberId)
             const groupDetail: IGroup = await mapToDetail(group)
-            return groupDetail
+            return {
+                group: groupDetail,
+                permission: userRole.getPermission(),
+            }
         }
         throw GROUP_ERROR_CODE.NOT_HAVING_PERMISSION
     }),
@@ -112,8 +121,11 @@ export default {
         if (userRole.hasPermission(Privilege.GRANTING)) {
             const { memberId } = event.body
             const group: IGroupDTO = await groupService.grantRole(groupId, memberId)
-            const groupGeneral: IGroupGeneral = await mapToGeneral(group)
-            return groupGeneral
+            const groupGeneral: IGroup = await mapToDetail(group)
+            return {
+                group: groupGeneral,
+                permission: userRole.getPermission(),
+            }
         }
         throw GROUP_ERROR_CODE.NOT_HAVING_PERMISSION
     }),
@@ -125,8 +137,11 @@ export default {
         if (userRole.hasPermission(Privilege.REVOKING)) {
             const { memberId } = event.body
             const group: IGroupDTO = await groupService.revokeRole(groupId, memberId)
-            const groupGeneral: IGroupGeneral = await mapToGeneral(group)
-            return groupGeneral
+            const groupGeneral: IGroup = await mapToDetail(group)
+            return {
+                group: groupGeneral,
+                permission: userRole.getPermission(),
+            }
         }
         throw GROUP_ERROR_CODE.NOT_HAVING_PERMISSION
     }),

@@ -137,6 +137,8 @@ class GroupService {
         if (group.coOwners.includes(memberId)) {
             throw GROUP_ERROR_CODE.CANNOT_REMOVE_CO_OWNER
         }
+        console.log('memberId', memberId)
+        console.log('group.members', group.members)
         if (!group.members.includes(memberId)) {
             throw GROUP_ERROR_CODE.MEMBER_NOT_IN_GROUP
         }
