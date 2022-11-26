@@ -67,7 +67,7 @@ class GroupService {
             },
             {
                 $match: {
-                    members: memberId,
+                    members: memberId.toString(),
                 },
             },
             {
@@ -83,6 +83,7 @@ class GroupService {
                 },
             },
         ]
+        console.log('pipeline', pipeline)
         const groups: IGroupDTO[] = await this.repository.aggregate(pipeline)
         return Promise.all(groups.map(async (group) => mapTo(group)))
     }
