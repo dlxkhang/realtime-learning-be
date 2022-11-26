@@ -1,5 +1,6 @@
 import { Request, Response } from 'express'
 import { IUser } from '../../interfaces'
+import { mapTo } from './mapper'
 import userService from './user.service'
 
 class UserController {
@@ -7,10 +8,11 @@ class UserController {
         try {
             const { _id } = req.user as IUser
             const user = await userService.getProfileById(_id)
-            const { password, ...profile } = user
-            res.json(profile)
+            res.json(mapTo(user))
         } catch (err) {
-            res.status(err.statusCode ? err.statusCode : 500).send(err.statusCode ? err.message : 'Internal Server Error')
+            res.status(err.statusCode ? err.statusCode : 500).send(
+                err.statusCode ? err.message : 'Internal Server Error',
+            )
         }
     }
 
@@ -18,17 +20,11 @@ class UserController {
         try {
             const { _id } = req.user as IUser
             const user = await userService.updateProfile(_id, req.body)
-            res.json({
-                _id: user._id,
-                avatar: user.avatar,
-                email: user.email,
-                fullName: user.fullName,
-                phoneNumber: user.phoneNumber,
-                gender: user.gender,
-                dateOfBirth: user.dateOfBirth,
-            })
+            res.json(mapTo(user))
         } catch (err) {
-            res.status(err.statusCode ? err.statusCode : 500).send(err.statusCode ? err.message : 'Internal Server Error')
+            res.status(err.statusCode ? err.statusCode : 500).send(
+                err.statusCode ? err.message : 'Internal Server Error',
+            )
         }
     }
 }

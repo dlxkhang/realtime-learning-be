@@ -61,6 +61,10 @@ export const GROUP_ERROR_CODE = {
         statusCode: 400,
         message: 'Co-owner not in group',
     },
+    NOT_HAVING_PERMISSION: {
+        statusCode: 400,
+        message: 'Not having permission',
+    },
 }
 
 export const INVITATION_ERROR_CODE = {
@@ -95,5 +99,16 @@ export const INVITATION_ERROR_CODE = {
     INVITEE_DUPLICATED: {
         statusCode: 400,
         message: 'Invitee already a member of this group',
+    },
+}
+
+export const GENERAL_ERROR_CODE = {
+    UNKNOWN_ERROR: {
+        statusCode: 400,
+        message: 'Bad request',
+    },
+    MAIL_SERVICE_ERROR: {
+        statusCode: 400,
+        message: 'Mail service error',
     },
 }

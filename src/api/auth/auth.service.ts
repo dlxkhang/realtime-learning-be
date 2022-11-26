@@ -10,7 +10,7 @@ import { Config } from '../../config'
 import userTokenModel from '../user/model/user-token.model'
 import userModel from '../user/model/user.model'
 
-import mailService from '../../ultis/mailService'
+import mailService from '../../utils/mail.util'
 import Template from '../../common/templates'
 import jwtDecode from 'jwt-decode'
 import { use } from 'passport'
@@ -22,7 +22,8 @@ class AuthService {
 
         if (existedUser) throw USER_ERROR_CODE.EMAIL_ALREADY_EXIST
         const emailToken = crypto.lib.WordArray.random(32).toString()
-        mailService.sendVerificationEmail(Template.verificationEmail(emailToken, registerDto.email))
+
+        await mailService.send(Template.verificationEmail(emailToken, registerDto.email))
         return userService.createUser({
             ...registerDto,
             password: registerDto.password

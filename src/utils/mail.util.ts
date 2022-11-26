@@ -1,6 +1,7 @@
 import sgMail from '@sendgrid/mail'
+import { ENV } from '../common/env'
+import { GENERAL_ERROR_CODE } from '../common/error-code'
 import { Mail } from '../interfaces/ultis/mail'
-sgMail.setApiKey('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')
 
 //sample mail object
 // const msg = {
@@ -12,16 +13,17 @@ sgMail.setApiKey('SG.vj1jQcc3RDuMV6lyxGn_ZQ.DNWuJfAJ01KhzghI7ellcHmzhHzJmEOUSde6
 // }
 
 class mailService {
-    sendVerificationEmail(msg: Mail) {
-        sgMail
-            .send(msg)
-            .then((response) => {
-                console.log(response[0].statusCode)
-                console.log(response[0].headers)
-            })
-            .catch((error) => {
-                console.error(error)
-            })
+    constructor() {
+        sgMail.setApiKey(ENV.SENDGRID_API_KEY)
+    }
+    async send(msg: Mail) {
+        try {
+            const res = await sgMail.send(msg)
+            console.log(res)
+        } catch (err) {
+            if (err.response && err.response.body) throw new Error(err.response.body.errors)
+            throw GENERAL_ERROR_CODE.MAIL_SERVICE_ERROR
+        }
     }
 }
 
