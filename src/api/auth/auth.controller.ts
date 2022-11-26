@@ -77,7 +77,20 @@ class AuthController {
         try {
             const token = req.params.token
             const status = await authService.verifiedEmail(token)
-            res.json(status)
+            res.status(200).json(status)
+        } catch (err) {
+            res.status(err.statusCode ? err.statusCode : 500).send(
+                err.statusCode ? err.message : 'Internal Server Error',
+            )
+        }
+    }
+
+    async resendEmailToken(req: Request, res: Response) {
+        try {
+            const emailToken = req.body.to
+            const unVerifiedUser = await authService.renewEmailToken(emailToken)
+            // 204 for resource updated successfully
+            res.status(204).json(unVerifiedUser)
         } catch (err) {
             res.status(err.statusCode ? err.statusCode : 500).send(
                 err.statusCode ? err.message : 'Internal Server Error',

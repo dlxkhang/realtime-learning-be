@@ -13,6 +13,7 @@ import userModel from '../user/model/user.model'
 import mailService from '../../ultis/mailService'
 import Template from '../../common/templates'
 import jwtDecode from 'jwt-decode'
+import { use } from 'passport'
 
 class AuthService {
     async register(registerDto: RegisterDTO) {
@@ -115,6 +116,18 @@ class AuthService {
             emailToken: user.emailToken,
         }
         return User
+    }
+    async renewEmailToken(token: string) {
+        const newToken = crypto.lib.WordArray.random(32).toString()
+        const unVerifiedUser = await userModel.findOneAndUpdate(
+            { emailToken: token },
+            { emailToken: newToken, isVerified: false },
+        )
+        if (!unVerifiedUser) {
+            throw USER_ERROR_CODE.EMAIL_NOT_FOUND
+        }
+        await mailService.send(Template.verificationEmail(newToken, unVerifiedUser.email))
+        return unVerifiedUser
     }
 }
 
