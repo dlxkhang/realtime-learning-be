@@ -61,8 +61,6 @@ class InvitationService {
 
         const group = await groupService.getGroup(groupId)
         if (!group) throw INVITATION_ERROR_CODE.GROUP_ID_NOT_FOUND
-        console.log('group', group)
-        console.log('inviterId', inviterId.toString())
         if (group.owner !== inviterId.toString()) throw INVITATION_ERROR_CODE.UNAUTHORIZED_INVITER
 
         const invitation = await invitationModel.findOne(
