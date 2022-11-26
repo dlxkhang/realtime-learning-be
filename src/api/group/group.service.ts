@@ -1,17 +1,32 @@
+import { IUser } from './../../interfaces/user/user.interface'
 import { GROUP_ERROR_CODE } from '../../common/error-code'
-import { IGroup, IGroupDTO } from '../../interfaces'
-import { mapTo } from './mapper'
+import { IGroupDTO } from '../../interfaces'
 import GroupRepository from './group.repository'
-
+import { Role } from '../../enums'
 class GroupService {
     private repository: GroupRepository
 
     constructor() {
         this.repository = new GroupRepository()
     }
-
     // Public methods
-    async createGroup(ownerId: string, groupInfo?: any): Promise<IGroup> {
+    async roleOf(caller: IUser, groupId: string): Promise<Role> {
+        const group: IGroupDTO = await this.repository.getGroupById(groupId)
+        if (!group) {
+            throw GROUP_ERROR_CODE.GROUP_NOT_FOUND
+        }
+        if (group.owner === caller._id.toString()) {
+            return Role.ADMINISTRATOR
+        }
+        if (group.coOwners.includes(caller._id.toString())) {
+            return Role.CO_ADMINISTRATOR
+        }
+        if (group.members.includes(caller._id.toString())) {
+            return Role.MEMBER
+        }
+        return Role.GUEST
+    }
+    async createGroup(ownerId: string, groupInfo?: any): Promise<IGroupDTO> {
         const { groupName, groupDescription, groupAvatar, groupBackground } = groupInfo
         if (!groupName) {
             throw GROUP_ERROR_CODE.MISSING_GROUP_NAME
@@ -29,25 +44,18 @@ class GroupService {
             coOwners: [],
             deleted: false,
         }
-        return mapTo(await this.repository.create(newGroup))
+        return await this.repository.create(newGroup)
     }
-    async editGroup(groupId: string, callerId: string, groupUpdated?: any): Promise<IGroup> {
+    async editGroup(groupId: string, groupUpdated?: any): Promise<IGroupDTO> {
         const group: IGroupDTO = await this.repository.getGroupById(groupId)
         if (!group) {
             console.log('Group not found')
             throw GROUP_ERROR_CODE.GROUP_NOT_FOUND
         }
-        if (
-            group.owner !== callerId?.toString() &&
-            !group.coOwners.includes(callerId?.toString())
-        ) {
-            console.log('Caller is not owner or co-owner')
-            throw GROUP_ERROR_CODE.NOT_HAVING_PERMISSION
-        }
         const updatedGroup = await this.repository.updateById(groupId, groupUpdated)
-        return mapTo(updatedGroup)
+        return updatedGroup
     }
-    async getGroupHasMember(memberId: string): Promise<IGroup[]> {
+    async getGroupHasMember(memberId: string): Promise<IGroupDTO[]> {
         const pipeline = [
             {
                 $match: {
@@ -83,24 +91,23 @@ class GroupService {
                 },
             },
         ]
-        console.log('pipeline', pipeline)
         const groups: IGroupDTO[] = await this.repository.aggregate(pipeline)
-        return Promise.all(groups.map(async (group) => mapTo(group)))
+        return groups
     }
-    async getGroup(groupId: string): Promise<IGroup> {
+    async getGroup(groupId: string): Promise<IGroupDTO> {
         const group: IGroupDTO = await this.repository.getGroupById(groupId)
         if (!group) {
             throw GROUP_ERROR_CODE.GROUP_NOT_FOUND
         }
-        return mapTo(group)
+        return group
     }
 
-    async getGroupOwn(ownerId: string): Promise<IGroup[]> {
+    async getGroupOwn(ownerId: string): Promise<IGroupDTO[]> {
         const groups: IGroupDTO[] = await this.repository.getGroupByOwner(ownerId)
-        return Promise.all(groups.map(async (group) => mapTo(group)))
+        return groups
     }
 
-    async addMemberToGroup(groupId: string, memberId: string): Promise<IGroup> {
+    async addMemberToGroup(groupId: string, memberId: string): Promise<IGroupDTO> {
         const group: IGroupDTO = await this.repository.getGroupById(groupId)
         if (!group) {
             throw GROUP_ERROR_CODE.GROUP_NOT_FOUND
@@ -108,72 +115,71 @@ class GroupService {
         if (!group.members) {
             group.members = []
         }
-        if (group.members.includes(memberId)) {
+        if (
+            group.members.includes(memberId) ||
+            group.coOwners.includes(memberId) ||
+            group.owner === memberId
+        ) {
             throw GROUP_ERROR_CODE.MEMBER_ALREADY_IN_GROUP
         }
         group.members.push(memberId)
-        return mapTo(await this.repository.updateById(groupId, group))
+        return await this.repository.updateById(groupId, group)
     }
 
-    async removeMemberFromGroup(groupId: string, memberId: string): Promise<IGroup> {
+    async removeMemberFromGroup(groupId: string, memberId: string): Promise<IGroupDTO> {
         const group: IGroupDTO = await this.repository.getGroupById(groupId)
         if (!group) {
             throw GROUP_ERROR_CODE.GROUP_NOT_FOUND
         }
         if (!group.members) {
             group.members = []
+        }
+        if (group.coOwners.includes(memberId)) {
+            throw GROUP_ERROR_CODE.CANNOT_REMOVE_CO_OWNER
         }
         if (!group.members.includes(memberId)) {
             throw GROUP_ERROR_CODE.MEMBER_NOT_IN_GROUP
         }
         group.members = group.members.filter((member) => member !== memberId)
-        return mapTo(await this.repository.updateById(groupId, group))
+        return await this.repository.updateById(groupId, group)
     }
 
-    async addCoOwnerToGroup(groupId: string, coOwnerId: string): Promise<IGroup> {
+    async grantRole(groupId: string, memberId: string): Promise<IGroupDTO> {
         const group: IGroupDTO = await this.repository.getGroupById(groupId)
         if (!group) {
             throw GROUP_ERROR_CODE.GROUP_NOT_FOUND
         }
-        if (!group.coOwners) {
-            group.coOwners = []
+        if (!group.members.includes(memberId)) {
+            throw GROUP_ERROR_CODE.MEMBER_NOT_IN_GROUP
         }
-        if (group.coOwners.includes(coOwnerId)) {
-            throw GROUP_ERROR_CODE.CO_OWNER_ALREADY_IN_GROUP
+        if (group.coOwners.includes(memberId)) {
+            throw GROUP_ERROR_CODE.MEMBER_ALREADY_CO_OWNER
         }
-        group.coOwners.push(coOwnerId)
-        return mapTo(await this.repository.updateById(groupId, group))
+        group.members = group.members.filter((member) => member !== memberId)
+        group.coOwners.push(memberId)
+        return await this.repository.updateById(groupId, group)
     }
 
-    async removeCoOwnerFromGroup(groupId: string, coOwnerId: string): Promise<IGroup> {
+    async revokeRole(groupId: string, memberId: string): Promise<IGroupDTO> {
         const group: IGroupDTO = await this.repository.getGroupById(groupId)
         if (!group) {
             throw GROUP_ERROR_CODE.GROUP_NOT_FOUND
         }
-        if (!group.coOwners) {
-            group.coOwners = []
+        if (!group.coOwners.includes(memberId)) {
+            throw GROUP_ERROR_CODE.MEMBER_NOT_CO_OWNER
         }
-        if (!group.coOwners.includes(coOwnerId)) {
-            throw GROUP_ERROR_CODE.CO_OWNER_NOT_IN_GROUP
-        }
-        group.coOwners = group.coOwners.filter((coOwner) => coOwner !== coOwnerId)
-        return mapTo(await this.repository.updateById(groupId, group))
+        group.coOwners = group.coOwners.filter((coOwner) => coOwner !== memberId)
+        group.members.push(memberId)
+        return await this.repository.updateById(groupId, group)
     }
 
-    async deleteGroup(groupId: string, callerId: string): Promise<IGroup> {
+    async deleteGroup(groupId: string): Promise<IGroupDTO> {
         const group: IGroupDTO = await this.repository.getGroupById(groupId)
         if (!group) {
             console.log('Group not found')
             throw GROUP_ERROR_CODE.GROUP_NOT_FOUND
         }
-        if (
-            group.owner !== callerId?.toString() &&
-            !group.coOwners.includes(callerId?.toString())
-        ) {
-            console.log('Caller is not owner or co-owner')
-            throw GROUP_ERROR_CODE.NOT_HAVING_PERMISSION
-        }
-        return mapTo(await this.repository.deleteById(groupId))
+        return await this.repository.deleteById(groupId)
     }
 
     async isMemberOfGroup(groupId: string, memberId: string): Promise<boolean> {

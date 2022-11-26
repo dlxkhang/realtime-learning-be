@@ -1,5 +1,5 @@
 import { IGroup, IInvitation } from '../../interfaces'
-import { mapTo as groupMapper } from '../group/mapper'
+import { mapToDetail as groupMapper } from '../group/mapper'
 export const mapTo = async (
     invitation: IInvitation,
 ): Promise<Omit<IInvitation, '_id' | 'group'> & { id: string; group: IGroup }> => {

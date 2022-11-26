@@ -1,5 +1,6 @@
 import { Request } from 'express'
 import { JwtPayload } from 'jwt-decode'
+import { IRole } from '../role'
 export interface IUser {
     _id?: string
     email: string
@@ -31,4 +32,8 @@ export interface IGoogleUser extends JwtPayload {
     iat: number
     exp: number
     jti: string
+}
+
+export interface IMember extends IUser {
+    role?: IRole
 }
