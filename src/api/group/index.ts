@@ -35,14 +35,14 @@ router.post(
     groupController.removeMember,
 )
 router.post(
-    '/addCoOwner/:groupId',
+    '/grantRole/:groupId',
     passport.authenticate('jwt', { session: false }),
-    groupController.addCoOwner,
+    groupController.grantRole,
 )
 router.post(
-    '/removeCoOwner/:groupId',
+    '/revokeRole/:groupId',
     passport.authenticate('jwt', { session: false }),
-    groupController.removeCoOwner,
+    groupController.revokeRole,
 )
 router.delete(
     '/delete/:groupId',

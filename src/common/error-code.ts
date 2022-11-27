@@ -45,6 +45,10 @@ export const GROUP_ERROR_CODE = {
         statusCode: 400,
         message: 'Missing group owner',
     },
+    CANNOT_REMOVE_CO_OWNER: {
+        statusCode: 400,
+        message: 'Cannot remove co-owner',
+    },
     MEMBER_ALREADY_IN_GROUP: {
         statusCode: 400,
         message: 'Member already in group',
@@ -53,13 +57,13 @@ export const GROUP_ERROR_CODE = {
         statusCode: 400,
         message: 'Member not in group',
     },
-    CO_OWNER_ALREADY_IN_GROUP: {
+    MEMBER_ALREADY_CO_OWNER: {
         statusCode: 400,
-        message: 'Co-owner already in group',
+        message: 'Member already co-owner',
     },
-    CO_OWNER_NOT_IN_GROUP: {
+    MEMBER_NOT_CO_OWNER: {
         statusCode: 400,
-        message: 'Co-owner not in group',
+        message: 'Member not co-owner',
     },
     NOT_HAVING_PERMISSION: {
         statusCode: 400,
