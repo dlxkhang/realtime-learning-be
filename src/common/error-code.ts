@@ -26,6 +26,10 @@ export const AUTH_ERROR_CODE = {
         statusCode: 409,
         message: 'Invalid email token',
     },
+    EMAIL_ALREADY_VERIFIED: {
+        statusCode: 400,
+        message: 'Email already verified',
+    },
 }
 
 export const GROUP_ERROR_CODE = {
