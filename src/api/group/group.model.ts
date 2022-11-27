@@ -6,7 +6,7 @@ const { Schema } = mongoose
 
 const Group = new Schema<IGroupDTO>(
     {
-        name: { type: String, unique: true, required: true },
+        name: { type: String, required: true },
         description: { type: String, required: false },
         avatar: { type: String, required: false, default: constants.DEFAULT_IMAGE.AVATAR },
         background: { type: String, required: false, default: constants.DEFAULT_IMAGE.BACKGROUND },

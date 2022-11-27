@@ -8,7 +8,7 @@ class Template {
             text: `Click the the link below to verify email
                 Link`,
             html: `<strong>Click the the link below to verify email</strong> 
-        <a href="${ENV.API_BASE_URL}/auth/verify-email/${emailToken}">Link</a>
+        <a href="${ENV.APP_BASE_URL}/verify-email/${emailToken}">Link</a>
         `,
         }
         return msg

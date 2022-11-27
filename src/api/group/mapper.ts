@@ -1,6 +1,8 @@
 import { IUser } from '../../interfaces/user/user.interface'
-import { IGroup, IGroupDTO } from '../../interfaces'
+import { IGroup, IGroupDTO, IGroupGeneral } from '../../interfaces'
 import userService from '../user/user.service'
+import { RoleImpl } from '../../implementation'
+import { Role } from '../../enums'
 
 const mapFrom = (group: IGroup): IGroupDTO => {
     return {
@@ -15,11 +17,7 @@ const mapFrom = (group: IGroup): IGroupDTO => {
         deleted: false,
     }
 }
-const mapTo = async (group: IGroupDTO): Promise<IGroup> => {
-    const memberIds = group.members ?? []
-    const members: IUser[] = await userService.getUserList(memberIds, { password: 0 })
-    const coOwnerIds = group.coOwners ?? []
-    const coOwners: IUser[] = await userService.getUserList(coOwnerIds, { password: 0 })
+const mapToGeneral = async (group: IGroupDTO): Promise<IGroupGeneral> => {
     const owner: IUser = await userService.getUserById(group.owner, { password: 0 })
     return {
         id: group?._id,
@@ -27,10 +25,25 @@ const mapTo = async (group: IGroupDTO): Promise<IGroup> => {
         description: group?.description,
         avatar: group?.avatar,
         background: group?.background,
-        members,
-        owner,
-        coOwners,
+        owner: new RoleImpl(owner, Role.ADMINISTRATOR).getMember(),
+    }
+}
+const mapToDetail = async (group: IGroupDTO): Promise<IGroup> => {
+    const owner: IUser = await userService.getUserById(group.owner, { password: 0 })
+    const members: IUser[] = await userService.getUserList(group.members, { password: 0 })
+    const coOwners: IUser[] = await userService.getUserList(group.coOwners, { password: 0 })
+    return {
+        id: group?._id,
+        name: group?.name,
+        description: group?.description,
+        avatar: group?.avatar,
+        background: group?.background,
+        owner: new RoleImpl(owner, Role.ADMINISTRATOR).getMember(),
+        members: members.map((member) => new RoleImpl(member, Role.MEMBER).getMember()),
+        coOwners: coOwners.map((coOwner) =>
+            new RoleImpl(coOwner, Role.CO_ADMINISTRATOR).getMember(),
+        ),
     }
 }
 
-export { mapFrom, mapTo }
+export { mapFrom, mapToGeneral, mapToDetail }

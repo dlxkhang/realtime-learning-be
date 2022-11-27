@@ -1,4 +1,3 @@
-import IGroup from './group.implement.interface'
-import IGroupDTO from './group.dto.interface'
+import { IBaseGroup, IGroup, IGroupDTO, IGroupGeneral } from './group.interface'
 
-export { IGroup, IGroupDTO }
+export { IBaseGroup, IGroup, IGroupDTO, IGroupGeneral }
