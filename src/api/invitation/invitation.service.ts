@@ -141,12 +141,14 @@ class InvitationService {
                 session.startTransaction()
                 try {
                     const invitation = await invitationModel.create(
-                        {
-                            type: InvitationType.EMAIL_INVITATION,
-                            inviter: inviterId,
-                            group: groupId,
-                            inviteeEmail,
-                        },
+                        [
+                            {
+                                type: InvitationType.EMAIL_INVITATION,
+                                inviter: inviterId,
+                                group: groupId,
+                                inviteeEmail,
+                            },
+                        ],
                         { session },
                     )
 
@@ -168,6 +170,7 @@ class InvitationService {
                     // undo any changes that might have happened
                     await session.abortTransaction()
                     session.endSession()
+                    console.log(error)
                     throw error
                 }
             }),

@@ -19,7 +19,6 @@ class mailService {
     async send(msg: Mail) {
         try {
             const res = await sgMail.send(msg)
-            console.log(res)
         } catch (err) {
             if (err.response && err.response.body) throw new Error(err.response.body.errors)
             throw GENERAL_ERROR_CODE.MAIL_SERVICE_ERROR
