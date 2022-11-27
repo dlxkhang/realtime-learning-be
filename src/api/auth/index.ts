@@ -9,7 +9,7 @@ router.post('/register', authController.register)
 router.post('/login-by-google', authController.googeLogin)
 router.post(
     '/login',
-    Middleware.isVerify,
+    // Middleware.isVerify,
     passport.authenticate('local', { session: false }),
     authController.login,
 )
