@@ -83,6 +83,7 @@ class AuthService {
     async verifiedEmail(emailToken: string) {
         const user = await userModel.findOne({ emailToken })
         if (!user) throw AUTH_ERROR_CODE.INVALID_EMAIL_TOKEN
+        if (user.isVerified) throw AUTH_ERROR_CODE.EMAIL_ALREADY_VERIFIED
         await userModel.findOneAndUpdate({ emailToken: emailToken }, { isVerified: true })
         return { ok: true }
     }
