@@ -15,7 +15,7 @@ export const USER_ERROR_CODE = {
 
 export const AUTH_ERROR_CODE = {
     WRONG_PROVIDED_PASSWORD: {
-        statusCode: 400,
+        statusCode: 401,
         message: 'Wrong provided password',
     },
     INVALID_REFRESH_TOKEN: {

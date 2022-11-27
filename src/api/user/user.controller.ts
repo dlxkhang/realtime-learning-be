@@ -27,6 +27,18 @@ class UserController {
             )
         }
     }
+
+    async updatePassword(req: Request, res: Response) {
+        try {
+            const { _id } = req.user as IUser
+            const user = await userService.updatePassword(_id, req.body)
+            res.json(mapTo(user))
+        } catch (err) {
+            res.status(err.statusCode ? err.statusCode : 500).send(
+                err.statusCode ? err.message : 'Internal Server Error',
+            )
+        }
+    }
 }
 
 export default new UserController()

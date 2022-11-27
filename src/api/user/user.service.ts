@@ -1,7 +1,7 @@
 import bcrypt from 'bcrypt'
-import { USER_ERROR_CODE } from '../../common/error-code'
+import { AUTH_ERROR_CODE, USER_ERROR_CODE } from '../../common/error-code'
 import { IUser } from '../../interfaces'
-import { CreateUserDTO, UpdateProfileDTO } from './dto'
+import { CreateUserDTO, UpdatePasswordDTO, UpdateProfileDTO } from './dto'
 import userModel from './model/user.model'
 
 class UserService {
@@ -42,6 +42,22 @@ class UserService {
 
     async getUserList(ids: string[], projection: any = {}) {
         return userModel.find({ _id: { $in: ids } }, projection, { lean: true })
+    }
+
+    async updatePassword(userId: string, updatePasswordDto: UpdatePasswordDTO): Promise<IUser> {
+        const user = await this.getUserById(userId)
+        if (!user) throw USER_ERROR_CODE.ID_NOT_FOUND
+
+        const { oldPassword, newPassword } = updatePasswordDto
+        const passwordMatched = await bcrypt.compare(oldPassword, user.password)
+        if (!passwordMatched) throw AUTH_ERROR_CODE.WRONG_PROVIDED_PASSWORD
+
+        const hashPassword = await bcrypt.hash(newPassword, 10)
+        return userModel.findOneAndUpdate(
+            { _id: userId },
+            { password: hashPassword },
+            { lean: true },
+        )
     }
 }
 
