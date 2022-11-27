@@ -84,11 +84,24 @@ class AuthController {
             )
         }
     }
-
+    // used for account verification error
     async resendEmailToken(req: Request, res: Response) {
         try {
             const emailToken = req.body.to
             const unVerifiedUser = await authService.renewEmailToken(emailToken)
+            // 204 for resource updated successfully
+            res.status(204).json(unVerifiedUser)
+        } catch (err) {
+            res.status(err.statusCode ? err.statusCode : 500).send(
+                err.statusCode ? err.message : 'Internal Server Error',
+            )
+        }
+    }
+    //used for unrecieved verification email
+    async resendVerificationEmail(req: Request, res: Response) {
+        try {
+            const email = req.body.email
+            const unVerifiedUser = await authService.resendVerificationEmail(email)
             // 204 for resource updated successfully
             res.status(204).json(unVerifiedUser)
         } catch (err) {

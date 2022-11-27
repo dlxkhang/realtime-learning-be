@@ -130,6 +130,19 @@ class AuthService {
         await mailService.send(Template.verificationEmail(newToken, unVerifiedUser.email))
         return unVerifiedUser
     }
+
+    async resendVerificationEmail(email: string) {
+        const newToken = crypto.lib.WordArray.random(32).toString()
+        const unVerifiedUser = await userModel.findOneAndUpdate(
+            { email: email },
+            { emailToken: newToken, isVerified: false },
+        )
+        if (!unVerifiedUser) {
+            throw USER_ERROR_CODE.EMAIL_NOT_FOUND
+        }
+        await mailService.send(Template.verificationEmail(newToken, unVerifiedUser.email))
+        return unVerifiedUser
+    }
 }
 
 export default new AuthService()
