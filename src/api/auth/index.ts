@@ -5,6 +5,7 @@ import Middleware from '../../middleware/middleware'
 const router = express.Router()
 router.get('/verify-email/:token', authController.verifyEmailToken)
 router.post('/resend-verification-mail/', authController.resendEmailToken)
+router.post('/resend-mail/', authController.resendVerificationEmail)
 router.post('/register', authController.register)
 router.post('/login-by-google', authController.googeLogin)
 router.post(
