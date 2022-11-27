@@ -1,15 +1,31 @@
-import { IGroup, IGroupDTO, IInvitation } from '../../interfaces'
-import groupService from '../group/group.service'
+import { Types } from 'mongoose'
+import { IGroup, IInvitation, IUser } from '../../interfaces'
 import { mapToDetail as groupMapper } from '../group/mapper'
+import { mapTo as userMapper } from '../user/mapper'
+
 export const mapTo = async (
     invitation: IInvitation,
-): Promise<Omit<IInvitation, '_id' | 'group'> & { id: string; group: IGroup }> => {
-    const { _id, group, ...rest } = invitation
-    const groupDto: IGroupDTO = await groupService.getGroup(group.toString())
-    const transformedGroup = await groupMapper(groupDto)
+): Promise<
+    Omit<IInvitation, '_id' | 'group' | 'inviter'> & {
+        id: string
+        group: IGroup | Types.ObjectId
+        inviter: IUser | Types.ObjectId
+    }
+> => {
+    const { _id, group, inviter, ...rest } = invitation
+    let transformedGroup
+    let transformedInviter
+    if (!(group instanceof Types.ObjectId)) {
+        transformedGroup = await groupMapper(group as any)
+    }
+    if (!(inviter instanceof Types.ObjectId)) {
+        transformedInviter = userMapper(inviter as any)
+    }
+
     return {
         id: _id,
         group: transformedGroup,
+        inviter: transformedInviter,
         ...rest,
     }
 }

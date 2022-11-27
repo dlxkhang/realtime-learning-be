@@ -32,13 +32,14 @@ const mapToDetail = async (group: IGroupDTO): Promise<IGroup> => {
     const owner: IUser = await userService.getUserById(group.owner, { password: 0 })
     const members: IUser[] = await userService.getUserList(group.members, { password: 0 })
     const coOwners: IUser[] = await userService.getUserList(group.coOwners, { password: 0 })
+
     return {
         id: group?._id,
         name: group?.name,
         description: group?.description,
         avatar: group?.avatar,
         background: group?.background,
-        owner: new RoleImpl(owner, Role.ADMINISTRATOR).getMember(),
+        owner: owner ? new RoleImpl(owner, Role.ADMINISTRATOR).getMember() : undefined,
         members: members.map((member) => new RoleImpl(member, Role.MEMBER).getMember()),
         coOwners: coOwners.map((coOwner) =>
             new RoleImpl(coOwner, Role.CO_ADMINISTRATOR).getMember(),
