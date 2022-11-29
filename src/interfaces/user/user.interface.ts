@@ -36,4 +36,5 @@ export interface IGoogleUser extends JwtPayload {
 
 export interface IMember extends IUser {
     role?: IRole
+    id?: string
 }
