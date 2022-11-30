@@ -6,6 +6,7 @@ import logger from 'morgan'
 import cors from 'cors'
 import bodyParser from 'body-parser'
 import route from './route'
+import { corsOptions } from './config'
 
 const app = express()
 
@@ -18,18 +19,7 @@ app.use(bodyParser.json())
 app.use(cookieParser())
 app.use(express.static(path.join(__dirname, 'public')))
 
-// Cors option
-const options = {
-    origin: [
-        'http://localhost:3000',
-        'https://realtime-learning-fe.vercel.app',
-        'https://realtime-learning-fe-midterm.vercel.app',
-    ],
-    methods: 'GET, POST, PUT, DELETE',
-    credentials: true,
-}
-
-app.use(cors(options))
+app.use(cors(corsOptions))
 
 // routes init
 route(app)
