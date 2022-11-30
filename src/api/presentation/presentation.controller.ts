@@ -16,4 +16,27 @@ export default {
         const presentationResponse = mapToResponse(presentation)
         return presentationResponse
     }),
+    getPresentationById: controllerWrapper(async (event: IEvent) => {
+        const presentationId = event.params.id
+
+        const presentation = await presentationService.getById(presentationId)
+        return mapToResponse(presentation)
+    }),
+
+    editPresentationById: controllerWrapper(async (event: IEvent) => {
+        const presentationId = event.params.id
+        const { name, description, createBy } = event.body
+        const modifiedPresentation = await presentationService.editById(presentationId, {
+            name,
+            description,
+            createBy,
+        } as Presentation)
+        return mapToResponse(modifiedPresentation)
+    }),
+
+    deletePresentationById: controllerWrapper(async (event: IEvent) => {
+        const presentationId = event.params.id
+        const deletedPresentation = await presentationService.deleteById(presentationId)
+        return mapToResponse(deletedPresentation)
+    }),
 }

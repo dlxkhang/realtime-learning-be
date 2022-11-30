@@ -1,6 +1,7 @@
 import { PRESENTATION_ERROR_CODE } from '../../common/error-code'
 import { Presentation } from '../../interfaces/presentation/presentation.interface'
 import presentationRepository from './presentation.repository'
+import { Error } from 'mongoose'
 import * as crypto from 'crypto-js'
 
 class PresentationService {
@@ -12,9 +13,9 @@ class PresentationService {
     async create(newPresentation: Presentation): Promise<Presentation> {
         const { name, description, createBy } = newPresentation
         if (!name) {
-            throw PRESENTATION_ERROR_CODE.MISSING_GROUP_NAME
+            throw PRESENTATION_ERROR_CODE.MISSING_PRESENTATION_NAME
         }
-        const randomInviteCode = crypto.lib.WordArray.random(6).toString()
+        const randomInviteCode = Math.floor(100000 + Math.random() * 900000).toString()
         const presentation: Presentation = {
             name,
             description,
@@ -25,6 +26,59 @@ class PresentationService {
             slideList: [],
         }
         return await this.repository.create(presentation)
+    }
+    async getById(presentationId?: string): Promise<Presentation> {
+        try {
+            if (!presentationId) {
+                throw PRESENTATION_ERROR_CODE.PRESENTATION_MISSING_ID
+            }
+            const presentation = await this.repository.getById(presentationId)
+            if (!presentation) {
+                throw PRESENTATION_ERROR_CODE.PRESENTATION_NOT_FOUND
+            }
+            return presentation
+        } catch (e) {
+            if (e instanceof Error.CastError) {
+                throw PRESENTATION_ERROR_CODE.PRESENTATION_INVALID_ID
+            } else throw e
+        }
+    }
+    async editById(presentationId: string, presentation: Presentation): Promise<Presentation> {
+        try {
+            if (!presentationId) {
+                throw PRESENTATION_ERROR_CODE.PRESENTATION_MISSING_ID
+            }
+            const modifiedPresentation = await this.repository.editById(
+                presentationId,
+                presentation,
+            )
+            if (!modifiedPresentation) {
+                throw PRESENTATION_ERROR_CODE.PRESENTATION_NOT_FOUND
+            }
+            return modifiedPresentation
+        } catch (e) {
+            if (e instanceof Error.CastError) {
+                throw PRESENTATION_ERROR_CODE.PRESENTATION_INVALID_ID
+            } else throw e
+        }
+    }
+
+    async deleteById(presentationId: string): Promise<Presentation> {
+        try {
+            if (!presentationId) {
+                throw PRESENTATION_ERROR_CODE.PRESENTATION_MISSING_ID
+            }
+            const deletedPresentation = await this.repository.deleteById(presentationId)
+            if (!deletedPresentation) {
+                throw PRESENTATION_ERROR_CODE.PRESENTATION_NOT_FOUND
+            }
+
+            return deletedPresentation
+        } catch (e) {
+            if (e instanceof Error.CastError) {
+                throw PRESENTATION_ERROR_CODE.PRESENTATION_INVALID_ID
+            } else throw e
+        }
     }
 }
 
