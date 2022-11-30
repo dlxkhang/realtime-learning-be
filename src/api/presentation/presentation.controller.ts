@@ -2,8 +2,8 @@ import { IEvent } from '../../interfaces'
 import controllerWrapper from '../../core/controllerWrapper'
 import presentationRepository from './presentation.repository'
 import presentationService from './presentation.service'
-import { Presentation } from '../../interfaces/presentation/presentation.interface'
-import { mapToResponse } from './mapper'
+import { Option, Presentation, Slide } from '../../interfaces/presentation/presentation.interface'
+import { mapToPresentationResponse, mapToSlideResponse, mapToSlideListResponse } from './mapper'
 
 export default {
     createPresentation: controllerWrapper(async (event: IEvent) => {
@@ -13,14 +13,14 @@ export default {
             description,
             createBy,
         } as Presentation)
-        const presentationResponse = mapToResponse(presentation)
+        const presentationResponse = mapToPresentationResponse(presentation)
         return presentationResponse
     }),
     getPresentationById: controllerWrapper(async (event: IEvent) => {
         const presentationId = event.params.id
 
         const presentation = await presentationService.getById(presentationId)
-        return mapToResponse(presentation)
+        return mapToPresentationResponse(presentation)
     }),
 
     editPresentationById: controllerWrapper(async (event: IEvent) => {
@@ -31,12 +31,28 @@ export default {
             description,
             createBy,
         } as Presentation)
-        return mapToResponse(modifiedPresentation)
+        return mapToPresentationResponse(modifiedPresentation)
     }),
 
     deletePresentationById: controllerWrapper(async (event: IEvent) => {
         const presentationId = event.params.id
         const deletedPresentation = await presentationService.deleteById(presentationId)
-        return mapToResponse(deletedPresentation)
+        return mapToPresentationResponse(deletedPresentation)
+    }),
+
+    addSlide: controllerWrapper(async (event: IEvent) => {
+        const { presentationId, text, optionList } = event.body
+        const modifiedPresentation = await presentationService.addSlide(presentationId, {
+            text,
+            optionList,
+        } as Slide)
+        return mapToSlideListResponse(modifiedPresentation)
+    }),
+
+    deleteSlide: controllerWrapper(async (event: IEvent) => {
+        const slideId = event.params.slideId
+        const { presentationId } = event.body
+        const modifiedPresentation = await presentationService.deleteSlide(presentationId, slideId)
+        return mapToSlideListResponse(modifiedPresentation)
     }),
 }

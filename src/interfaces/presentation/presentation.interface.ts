@@ -31,4 +31,16 @@ interface PresentationResponse {
     slideList?: Slide[]
 }
 
-export { Option, Slide, Presentation, PresentationResponse }
+interface SlideResponse {
+    id: string
+    text?: string
+    optionList?: OptionResponse[]
+}
+
+interface OptionResponse {
+    id: string
+    answer: string
+    vote: Number
+}
+
+export { Option, Slide, Presentation, PresentationResponse, SlideResponse, OptionResponse }
