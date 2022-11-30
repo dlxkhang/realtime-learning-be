@@ -16,6 +16,10 @@ class SocketService {
             })
         })
     }
+
+    broadcastToRoom(roomId: string, event: string, message: any) {
+        this.io.to(roomId).emit(event, message)
+    }
 }
 
 export default new SocketService()
