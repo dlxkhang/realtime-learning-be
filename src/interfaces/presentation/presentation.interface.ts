@@ -10,14 +10,25 @@ interface Slide {
 }
 
 interface Presentation {
-    _id: string
+    _id?: string
     name?: string
     description?: string
     createBy: string
     isPresenting: boolean
     currentSlide: number
     inviteCode: string
-    slideList: Slide[]
+    slideList?: Slide[]
 }
 
-export { Option, Slide, Presentation }
+interface PresentationResponse {
+    id: string
+    name?: string
+    description?: string
+    createBy: string
+    isPresenting: boolean
+    currentSlide: number
+    inviteCode: string
+    slideList?: Slide[]
+}
+
+export { Option, Slide, Presentation, PresentationResponse }

@@ -109,7 +109,29 @@ export const INVITATION_ERROR_CODE = {
         message: 'Invitee already a member of this group',
     },
 }
+export const PRESENTATION_ERROR_CODE = {
+    GROUP_NOT_FOUND: {
+        statusCode: 400,
+        message: 'Presentation not found',
+    },
+    GROUP_ALREADY_EXIST: {
+        statusCode: 409,
+        message: 'Presentation already exist',
+    },
+    MISSING_GROUP_NAME: {
+        statusCode: 400,
+        message: 'Missing Presentation name',
+    },
+    MISSING_GROUP_OWNER: {
+        statusCode: 400,
+        message: 'Missing Presentation owner',
+    },
 
+    NOT_HAVING_PERMISSION: {
+        statusCode: 400,
+        message: 'Not having permission',
+    },
+}
 export const GENERAL_ERROR_CODE = {
     UNKNOWN_ERROR: {
         statusCode: 400,
