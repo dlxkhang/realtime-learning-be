@@ -9,11 +9,15 @@ import listEndpoints from 'express-list-endpoints'
 import app from '../app'
 import { ENV } from '../common/env'
 import { COLORS } from '../common/color'
+import socketService from '../api/socket/socket.service'
 
 mongoose
     .connect(ENV.MONGODB_URI)
     .then(() => {
-        console.log(`${COLORS.FgBlack}${COLORS.BgMagenta}%s${COLORS.Reset}`, 'Connected to DB successfully')
+        console.log(
+            `${COLORS.FgBlack}${COLORS.BgMagenta}%s${COLORS.Reset}`,
+            'Connected to DB successfully',
+        )
         /**
          * Get port from environment and store in Express.
          */
@@ -27,11 +31,16 @@ mongoose
 
         const server = http.createServer(app)
 
+        // Initialize singleton instance
+        socketService.init(server)
         /**
          * Listen on provided port, on all network interfaces.
          */
         server.listen(port, () => {
-            console.log(`${COLORS.FgBlack}${COLORS.BgYellow}%s${COLORS.Reset}`, `Server is running on port ${port}`)
+            console.log(
+                `${COLORS.FgBlack}${COLORS.BgYellow}%s${COLORS.Reset}`,
+                `Server is running on port ${port}`,
+            )
             listEndpoints(app).forEach((endpoint: { path: string; methods: string[] }) => {
                 const method = endpoint.methods[0]?.toUpperCase()
                 const { path } = endpoint
