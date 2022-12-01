@@ -49,10 +49,26 @@ export default {
         return mapToSlideListResponse(modifiedPresentation)
     }),
 
-    deleteSlide: controllerWrapper(async (event: IEvent) => {
+    deleteSlideById: controllerWrapper(async (event: IEvent) => {
         const slideId = event.params.slideId
         const { presentationId } = event.body
         const modifiedPresentation = await presentationService.deleteSlide(presentationId, slideId)
+        return mapToSlideListResponse(modifiedPresentation)
+    }),
+
+    getSlideList: controllerWrapper(async (event: IEvent) => {
+        const presentationId = event.params.presentationId
+        const presentation = await presentationService.getById(presentationId)
+        return mapToSlideListResponse(presentation)
+    }),
+
+    editSlideById: controllerWrapper(async (event: IEvent) => {
+        const slideId = event.params.slideId
+        const { presentationId, text, optionList } = event.body
+        const modifiedPresentation = await presentationService.editSlide(presentationId, slideId, {
+            text,
+            optionList,
+        } as Slide)
         return mapToSlideListResponse(modifiedPresentation)
     }),
 }

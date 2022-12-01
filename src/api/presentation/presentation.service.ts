@@ -131,6 +131,37 @@ class PresentationService {
             } else throw e
         }
     }
+
+    async editSlide(
+        presentationId: string,
+        slideId: string,
+        newSlideInfo: Slide,
+    ): Promise<Presentation> {
+        try {
+            const presentation = await this.repository.getById(presentationId)
+            if (!presentation) {
+                throw PRESENTATION_ERROR_CODE.PRESENTATION_NOT_FOUND
+            }
+
+            const modifiedSlideIdx = presentation.slideList.findIndex(
+                (x) => x._id.toString() === slideId,
+            )
+            const newSlide: Slide = {
+                _id: slideId,
+                ...newSlideInfo,
+            }
+            presentation.slideList[modifiedSlideIdx] = newSlide
+            const modifiedPresentation = await this.repository.editById(
+                presentationId,
+                presentation,
+            )
+            return modifiedPresentation
+        } catch (e) {
+            if (e instanceof Error.CastError) {
+                throw PRESENTATION_ERROR_CODE.PRESENTATION_INVALID_ID
+            } else throw e
+        }
+    }
 }
 
 export default new PresentationService()

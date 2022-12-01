@@ -16,7 +16,7 @@ class PresentationRepository {
     }
 
     async getById(presentationId: string): Promise<Presentation> {
-        return presentationModel.findById(presentationId)
+        return await presentationModel.findById(presentationId)
     }
 
     async deleteById(presentationId: string): Promise<Presentation> {
