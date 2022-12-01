@@ -10,17 +10,17 @@ class PresentationRepository {
         presentationId: string,
         EditedPresentation: Presentation,
     ): Promise<Presentation> {
-        return presentationModel.findByIdAndUpdate(presentationId, EditedPresentation, {
+        return await presentationModel.findByIdAndUpdate(presentationId, EditedPresentation, {
             new: true,
         })
     }
 
     async getById(presentationId: string): Promise<Presentation> {
-        return presentationModel.findById(presentationId)
+        return await presentationModel.findById(presentationId)
     }
 
     async deleteById(presentationId: string): Promise<Presentation> {
-        return presentationModel.findByIdAndDelete(presentationId)
+        return await presentationModel.findByIdAndDelete(presentationId)
     }
 }
 

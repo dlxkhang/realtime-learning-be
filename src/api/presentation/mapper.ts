@@ -1,8 +1,16 @@
 import {
     PresentationResponse,
+    SlideResponse,
+    Option,
     Presentation,
+    Slide,
+    OptionResponse,
 } from '../../interfaces/presentation/presentation.interface'
-const mapToResponse = (presentation: Presentation): PresentationResponse => {
+const mapToSlideListResponse = (presentation: Presentation): SlideResponse[] => {
+    const slideList = presentation.slideList.map(mapToSlideResponse)
+    return slideList
+}
+const mapToPresentationResponse = (presentation: Presentation): PresentationResponse => {
     return {
         id: presentation._id,
         name: presentation.name,
@@ -14,4 +22,19 @@ const mapToResponse = (presentation: Presentation): PresentationResponse => {
         inviteCode: presentation.inviteCode,
     }
 }
-export { mapToResponse }
+const mapToSlideResponse = (slide: Slide): SlideResponse => {
+    const optionListResponse = slide.optionList.map(mapToOptionResponse)
+    return {
+        id: slide._id,
+        text: slide.text,
+        optionList: optionListResponse,
+    }
+}
+const mapToOptionResponse = (option: Option): OptionResponse => {
+    return {
+        id: option._id,
+        answer: option.answer,
+        vote: option.vote,
+    }
+}
+export { mapToPresentationResponse, mapToSlideResponse, mapToSlideListResponse }

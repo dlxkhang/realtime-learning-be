@@ -110,19 +110,27 @@ export const INVITATION_ERROR_CODE = {
     },
 }
 export const PRESENTATION_ERROR_CODE = {
-    GROUP_NOT_FOUND: {
+    PRESENTATION_MISSING_ID: {
+        statusCode: 400,
+        message: 'Presentation ID not found',
+    },
+    PRESENTATION_INVALID_ID: {
+        statusCode: 400,
+        message: 'Invalid ID',
+    },
+    PRESENTATION_NOT_FOUND: {
         statusCode: 400,
         message: 'Presentation not found',
     },
-    GROUP_ALREADY_EXIST: {
+    PRESENTATION_ALREADY_EXIST: {
         statusCode: 409,
         message: 'Presentation already exist',
     },
-    MISSING_GROUP_NAME: {
+    MISSING_PRESENTATION_NAME: {
         statusCode: 400,
         message: 'Missing Presentation name',
     },
-    MISSING_GROUP_OWNER: {
+    MISSING_PRESENTATION_OWNER: {
         statusCode: 400,
         message: 'Missing Presentation owner',
     },
