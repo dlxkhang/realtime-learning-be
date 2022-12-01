@@ -4,7 +4,10 @@ import { Role, Privilege } from '../enums'
 class RoleImpl {
     private member: IMember
     constructor(user: IUser, role: Role) {
-        this.member = user
+        this.member = {
+            ...user,
+            id: user._id.toString(),
+        }
         this.grant(role)
     }
     grant(role: Role): IMember {

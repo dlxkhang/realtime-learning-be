@@ -9,6 +9,7 @@ import listEndpoints from 'express-list-endpoints'
 import app from '../app'
 import { ENV } from '../common/env'
 import { COLORS } from '../common/color'
+import socketService from '../api/socket/socket.service'
 
 mongoose
     .connect('mongodb://localhost:27018/dev')
@@ -30,6 +31,8 @@ mongoose
 
         const server = http.createServer(app)
 
+        // Initialize singleton instance
+        socketService.init(server)
         /**
          * Listen on provided port, on all network interfaces.
          */
