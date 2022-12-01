@@ -11,7 +11,7 @@ import { ENV } from '../common/env'
 import { COLORS } from '../common/color'
 
 mongoose
-    .connect('mongodb://localhost:27018/dev')
+    .connect(ENV.MONGODB_URI)
     .then(() => {
         console.log(
             `${COLORS.FgBlack}${COLORS.BgMagenta}%s${COLORS.Reset}`,
