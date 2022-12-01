@@ -19,7 +19,7 @@ mongoose
             'Connected to DB successfully',
         )
         /**
-         * Get port from environment and store in Express.
+         * Get port from environment and store in Express
          */
 
         const port = normalizePort(ENV.PORT || '3300')
