@@ -1,7 +1,7 @@
 interface Option {
     _id: string
     answer: string
-    vote: Number
+    vote: number
 }
 interface Slide {
     _id: string

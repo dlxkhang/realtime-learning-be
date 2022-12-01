@@ -1,5 +1,5 @@
 import { PRESENTATION_ERROR_CODE } from '../../common/error-code'
-import { Presentation, Slide } from '../../interfaces/presentation/presentation.interface'
+import { Option, Presentation, Slide } from '../../interfaces/presentation/presentation.interface'
 import presentationRepository from './presentation.repository'
 import { Error } from 'mongoose'
 import * as crypto from 'crypto-js'
@@ -32,7 +32,7 @@ class PresentationService {
             if (!presentationId) {
                 throw PRESENTATION_ERROR_CODE.PRESENTATION_MISSING_ID
             }
-            const presentation = await this.repository.getById(presentationId)
+            const presentation = await this.repository.getPrentationById(presentationId)
             if (!presentation) {
                 throw PRESENTATION_ERROR_CODE.PRESENTATION_NOT_FOUND
             }
@@ -86,7 +86,7 @@ class PresentationService {
             if (!presentationId) {
                 throw PRESENTATION_ERROR_CODE.PRESENTATION_MISSING_ID
             }
-            const presentation = await this.repository.getById(presentationId)
+            const presentation = await this.repository.getPrentationById(presentationId)
             if (!presentation) {
                 throw PRESENTATION_ERROR_CODE.PRESENTATION_NOT_FOUND
             }
@@ -110,7 +110,7 @@ class PresentationService {
             if (!presentationId) {
                 throw PRESENTATION_ERROR_CODE.PRESENTATION_MISSING_ID
             }
-            const presentation = await this.repository.getById(presentationId)
+            const presentation = await this.repository.getPrentationById(presentationId)
             if (!presentation) {
                 throw PRESENTATION_ERROR_CODE.PRESENTATION_NOT_FOUND
             }
@@ -138,7 +138,9 @@ class PresentationService {
         newSlideInfo: Slide,
     ): Promise<Presentation> {
         try {
-            const presentation = await this.repository.getById(presentationId)
+            const presentation: Presentation = await this.repository.getPrentationById(
+                presentationId,
+            )
             if (!presentation) {
                 throw PRESENTATION_ERROR_CODE.PRESENTATION_NOT_FOUND
             }
@@ -146,6 +148,9 @@ class PresentationService {
             const modifiedSlideIdx = presentation.slideList.findIndex(
                 (x) => x._id.toString() === slideId,
             )
+            if (modifiedSlideIdx === -1) {
+                throw PRESENTATION_ERROR_CODE.SLIDE_NOT_FOUND
+            }
             const newSlide: Slide = {
                 _id: slideId,
                 ...newSlideInfo,
@@ -156,6 +161,44 @@ class PresentationService {
                 presentation,
             )
             return modifiedPresentation
+        } catch (e) {
+            if (e instanceof Error.CastError) {
+                throw PRESENTATION_ERROR_CODE.PRESENTATION_INVALID_ID
+            } else throw e
+        }
+    }
+
+    async updateAnswer(presentationId: any, slideId: any, optionId: any) {
+        const presentation = await this.repository.getPrentationById(presentationId)
+        if (!presentation) {
+            throw PRESENTATION_ERROR_CODE.PRESENTATION_NOT_FOUND
+        }
+        const slide = presentation.slideList.find((slide) => slide._id.toString() === slideId)
+        if (!slide) {
+            throw PRESENTATION_ERROR_CODE.SLIDE_NOT_FOUND
+        }
+        const option: Option = slide.optionList.find((option) => option._id.toString() === optionId)
+        if (!option) {
+            throw PRESENTATION_ERROR_CODE.OPTION_NOT_FOUND
+        }
+        option.vote += 1
+        const modifiedPresentation = await this.repository.editById(presentationId, presentation)
+        return modifiedPresentation
+    }
+    async getSlideById(presentationId: string, slideId: string): Promise<Slide> {
+        try {
+            if (!slideId) {
+                throw PRESENTATION_ERROR_CODE.PRESENTATION_MISSING_ID
+            }
+            const presentation = await this.repository.getPrentationById(presentationId)
+            if (!presentation) {
+                throw PRESENTATION_ERROR_CODE.PRESENTATION_NOT_FOUND
+            }
+            const slide = presentation.slideList.find((slide) => slide._id.toString() === slideId)
+            if (!slide) {
+                throw PRESENTATION_ERROR_CODE.SLIDE_NOT_FOUND
+            }
+            return slide
         } catch (e) {
             if (e instanceof Error.CastError) {
                 throw PRESENTATION_ERROR_CODE.PRESENTATION_INVALID_ID
