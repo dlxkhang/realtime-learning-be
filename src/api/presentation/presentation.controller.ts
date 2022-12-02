@@ -25,7 +25,8 @@ export default {
 
     editPresentationById: controllerWrapper(async (event: IEvent) => {
         const presentationId = event.params.id
-        const { name, description, createBy } = event.body
+        const createBy = event.user._id.toString()
+        const { name, description } = event.body
         const modifiedPresentation = await presentationService.editById(presentationId, {
             name,
             description,
