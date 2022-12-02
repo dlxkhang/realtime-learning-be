@@ -4,6 +4,8 @@ import presentationRepository from './presentation.repository'
 import { Error } from 'mongoose'
 import * as crypto from 'crypto-js'
 import userModel from '../user/model/user.model'
+import socketService from '../socket/socket.service'
+import { SocketEvent } from '../socket/event'
 
 class PresentationService {
     private repository: typeof presentationRepository
@@ -182,12 +184,17 @@ class PresentationService {
         if (!slide) {
             throw PRESENTATION_ERROR_CODE.SLIDE_NOT_FOUND
         }
+
         const option: Option = slide.optionList.find((option) => option._id.toString() === optionId)
         if (!option) {
             throw PRESENTATION_ERROR_CODE.OPTION_NOT_FOUND
         }
         option.vote += 1
         const modifiedPresentation = await this.repository.editById(presentationId, presentation)
+
+        socketService.broadcastToRoom(presentationId, SocketEvent.UPDATE_RESULTS, {
+            slide,
+        })
         return modifiedPresentation
     }
     async getSlideById(presentationId: string, slideId: string): Promise<Slide> {

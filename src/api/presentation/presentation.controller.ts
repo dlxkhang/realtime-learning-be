@@ -83,8 +83,7 @@ export default {
         else return { ok: true }
     }),
     getSlideById: controllerWrapper(async (event: IEvent) => {
-        const slideId = event.params.slideId
-        const presentationId = event.body.presentationId
+        const { presentationId, slideId } = event.params
         const slide = await presentationService.getSlideById(presentationId, slideId)
         return mapToSlideResponse(slide)
     }),

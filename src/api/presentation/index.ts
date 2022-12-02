@@ -42,16 +42,8 @@ router.put(
     passport.authenticate('jwt', { session: false }),
     presentationController.editSlideById,
 )
-router.post(
-    '/slide/update-answer',
-    passport.authenticate('jwt', { session: false }),
-    presentationController.updateAnswer,
-)
-router.get(
-    '/slide/get/:slideId',
-    passport.authenticate('jwt', { session: false }),
-    presentationController.getSlideById,
-)
+router.post('/slide/update-answer', presentationController.updateAnswer)
+router.get('/slide/get/:presentationId&:slideId', presentationController.getSlideById)
 // get list of presentation by user id
 router.get(
     '/get-all',
