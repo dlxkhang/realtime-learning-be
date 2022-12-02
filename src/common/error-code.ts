@@ -147,6 +147,10 @@ export const PRESENTATION_ERROR_CODE = {
         statusCode: 400,
         message: 'Option not found',
     },
+    USER_NOT_FOUND: {
+        statusCode: 400,
+        message: 'User not found',
+    },
 }
 export const GENERAL_ERROR_CODE = {
     UNKNOWN_ERROR: {

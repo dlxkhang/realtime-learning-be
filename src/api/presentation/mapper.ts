@@ -1,3 +1,4 @@
+import { Types } from 'mongoose'
 import {
     PresentationResponse,
     SlideResponse,
@@ -6,19 +7,25 @@ import {
     Slide,
     OptionResponse,
 } from '../../interfaces/presentation/presentation.interface'
+import { mapTo as userMapper } from '../user/mapper'
 const mapToSlideListResponse = (presentation: Presentation): SlideResponse[] => {
     const slideList = presentation.slideList.map(mapToSlideResponse)
     return slideList
 }
 const mapToPresentationResponse = (presentation: Presentation): PresentationResponse => {
+    let transformedCreateBy
+    if (!(presentation.createBy instanceof Types.ObjectId)) {
+        transformedCreateBy = userMapper(presentation.createBy as any)
+    }
+
     return {
         id: presentation._id,
         name: presentation.name,
         description: presentation.description,
-        createBy: presentation.createBy,
+        createBy: transformedCreateBy,
         isPresenting: presentation.isPresenting,
         currentSlide: presentation.currentSlide,
-        slideList: presentation.slideList,
+        slideList: mapToSlideListResponse(presentation),
         inviteCode: presentation.inviteCode,
     }
 }

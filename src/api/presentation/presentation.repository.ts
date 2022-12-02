@@ -2,8 +2,15 @@ import { Presentation, Slide } from '../../interfaces/presentation/presentation.
 import presentationModel from './presentation.model'
 
 class PresentationRepository {
-    async create(newPresenation: Presentation): Promise<Presentation> {
-        return await presentationModel.create(newPresenation)
+    async create(newPresenation: Presentation) {
+        return (
+            await (
+                await presentationModel.create(newPresenation)
+            ).populate({
+                path: 'createBy',
+                select: 'fullName avatar',
+            })
+        ).toObject()
     }
 
     async editById(
@@ -16,7 +23,19 @@ class PresentationRepository {
     }
 
     async getPrentationById(presentationId: string): Promise<Presentation> {
-        return await presentationModel.findById(presentationId)
+        return await presentationModel.findById(
+            presentationId,
+            {},
+            {
+                populate: [
+                    {
+                        path: 'createBy',
+                        select: 'fullName avatar',
+                    },
+                ],
+                lean: true,
+            },
+        )
     }
 
     async deleteById(presentationId: string): Promise<Presentation> {
