@@ -17,9 +17,15 @@ class PresentationRepository {
         presentationId: string,
         EditedPresentation: Presentation,
     ): Promise<Presentation> {
-        return await presentationModel.findByIdAndUpdate(presentationId, EditedPresentation, {
-            new: true,
-        })
+        return await presentationModel
+            .findByIdAndUpdate(presentationId, EditedPresentation, {
+                new: true,
+            })
+            .populate({
+                path: 'createBy',
+                select: 'fullName avatar',
+            })
+            .lean()
     }
 
     async getPrentationById(presentationId: string): Promise<Presentation> {
@@ -39,7 +45,32 @@ class PresentationRepository {
     }
 
     async deleteById(presentationId: string): Promise<Presentation> {
-        return await presentationModel.findByIdAndDelete(presentationId)
+        return await presentationModel
+            .findByIdAndDelete(presentationId)
+            .populate({
+                path: 'createBy',
+                select: 'fullName avatar',
+            })
+            .lean()
+    }
+
+    //get list of presentation by user id
+    async getPresentationListByUserId(userId: string): Promise<Presentation[]> {
+        return await presentationModel.find(
+            {
+                createBy: userId,
+            },
+            {},
+            {
+                populate: [
+                    {
+                        path: 'createBy',
+                        select: 'fullName avatar',
+                    },
+                ],
+                lean: true,
+            },
+        )
     }
 }
 

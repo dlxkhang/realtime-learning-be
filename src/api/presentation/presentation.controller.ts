@@ -25,7 +25,8 @@ export default {
 
     editPresentationById: controllerWrapper(async (event: IEvent) => {
         const presentationId = event.params.id
-        const { name, description, createBy } = event.body
+        const createBy = event.user._id.toString()
+        const { name, description } = event.body
         const modifiedPresentation = await presentationService.editById(presentationId, {
             name,
             description,
@@ -86,5 +87,11 @@ export default {
         const presentationId = event.body.presentationId
         const slide = await presentationService.getSlideById(presentationId, slideId)
         return mapToSlideResponse(slide)
+    }),
+    // get list of presentation by user id
+    getPresentationListByUserId: controllerWrapper(async (event: IEvent) => {
+        const userId = event.user._id.toString()
+        const presentationList = await presentationService.getPresentationListByUserId(userId)
+        return presentationList.map((presentation) => mapToPresentationResponse(presentation))
     }),
 }
