@@ -3,6 +3,7 @@ import { Option, Presentation, Slide } from '../../interfaces/presentation/prese
 import presentationRepository from './presentation.repository'
 import { Error } from 'mongoose'
 import * as crypto from 'crypto-js'
+import userModel from '../user/model/user.model'
 
 class PresentationService {
     private repository: typeof presentationRepository
@@ -14,6 +15,10 @@ class PresentationService {
         const { name, description, createBy } = newPresentation
         if (!name) {
             throw PRESENTATION_ERROR_CODE.MISSING_PRESENTATION_NAME
+        }
+        const createUser = userModel.findById(createBy)
+        if (!createUser) {
+            throw PRESENTATION_ERROR_CODE.USER_NOT_FOUND
         }
         const randomInviteCode = Math.floor(1000000 + Math.random() * 9000000).toString()
         const presentation: Presentation = {

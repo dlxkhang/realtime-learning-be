@@ -7,14 +7,14 @@ import { mapToPresentationResponse, mapToSlideResponse, mapToSlideListResponse }
 
 export default {
     createPresentation: controllerWrapper(async (event: IEvent) => {
-        const { name, description, createBy } = event.body
+        const { name, description } = event.body
+        const createBy = event.user._id.toString()
         const presentation = await presentationService.create({
             name,
             description,
             createBy,
         } as Presentation)
-        const presentationResponse = mapToPresentationResponse(presentation)
-        return presentationResponse
+        return mapToPresentationResponse(presentation)
     }),
     getPresentationById: controllerWrapper(async (event: IEvent) => {
         const presentationId = event.params.id

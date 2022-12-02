@@ -1,5 +1,6 @@
 import mongoose from 'mongoose'
 import { Option, Presentation, Slide } from '../../interfaces/presentation/presentation.interface'
+import userModel from '../user/model/user.model'
 const { Schema } = mongoose
 const Option = new Schema<Option>({
     answer: { type: String, required: true },
@@ -13,7 +14,7 @@ const Slide = new Schema<Slide>({
 const Presentation = new Schema<Presentation>({
     name: { type: String },
     description: { type: String },
-    createBy: { type: String },
+    createBy: { type: Schema.Types.ObjectId, ref: 'User' },
     isPresenting: { type: Boolean },
     currentSlide: { type: Number },
     inviteCode: { type: String },

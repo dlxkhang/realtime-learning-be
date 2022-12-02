@@ -1,3 +1,5 @@
+import { Types } from 'mongoose'
+import { IUser } from '../user'
 interface Option {
     _id: string
     answer: string
@@ -13,7 +15,7 @@ interface Presentation {
     _id?: string
     name?: string
     description?: string
-    createBy: string
+    createBy: Types.ObjectId | IUser | string
     isPresenting: boolean
     currentSlide: number
     inviteCode: string
@@ -24,11 +26,11 @@ interface PresentationResponse {
     id: string
     name?: string
     description?: string
-    createBy: string
+    createBy: string | IUser
     isPresenting: boolean
     currentSlide: number
     inviteCode: string
-    slideList?: Slide[]
+    slideList?: SlideResponse[]
 }
 
 interface SlideResponse {
