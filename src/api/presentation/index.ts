@@ -1,12 +1,55 @@
 import express from 'express'
+import passport from '../../auth/passport'
 import presentationController from './presentation.controller'
 const router = express.Router()
-router.post('/create', presentationController.createPresentation)
-router.get('/get/:id', presentationController.getPresentationById)
-router.put('/edit/:id', presentationController.editPresentationById)
-router.delete('/delete/:id', presentationController.deletePresentationById)
-router.post('/slide/add', presentationController.addSlide)
-router.delete('/slide/delete/:slideId', presentationController.deleteSlideById)
-router.get('/:presentationId/slide/getAll', presentationController.getSlideList)
-router.put('/slide/edit/:slideId', presentationController.editSlideById)
+router.post(
+    '/create',
+    passport.authenticate('jwt', { session: false }),
+    presentationController.createPresentation,
+)
+router.get(
+    '/get/:id',
+    passport.authenticate('jwt', { session: false }),
+    presentationController.getPresentationById,
+)
+router.put(
+    '/edit/:id',
+    passport.authenticate('jwt', { session: false }),
+    presentationController.editPresentationById,
+)
+router.delete(
+    '/delete/:id',
+    passport.authenticate('jwt', { session: false }),
+    presentationController.deletePresentationById,
+)
+router.post(
+    '/slide/add',
+    passport.authenticate('jwt', { session: false }),
+    presentationController.addSlide,
+)
+router.delete(
+    '/slide/delete/:slideId',
+    passport.authenticate('jwt', { session: false }),
+    presentationController.deleteSlideById,
+)
+router.get(
+    '/:presentationId/slide/getAll',
+    passport.authenticate('jwt', { session: false }),
+    presentationController.getSlideList,
+)
+router.put(
+    '/slide/edit/:slideId',
+    passport.authenticate('jwt', { session: false }),
+    presentationController.editSlideById,
+)
+router.post(
+    '/slide/update-answer',
+    passport.authenticate('jwt', { session: false }),
+    presentationController.updateAnswer,
+)
+router.get(
+    '/slide/get/:slideId',
+    passport.authenticate('jwt', { session: false }),
+    presentationController.getSlideById,
+)
 export default router

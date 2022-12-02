@@ -1,4 +1,4 @@
-import { Presentation } from '../../interfaces/presentation/presentation.interface'
+import { Presentation, Slide } from '../../interfaces/presentation/presentation.interface'
 import presentationModel from './presentation.model'
 
 class PresentationRepository {
@@ -15,7 +15,7 @@ class PresentationRepository {
         })
     }
 
-    async getById(presentationId: string): Promise<Presentation> {
+    async getPrentationById(presentationId: string): Promise<Presentation> {
         return await presentationModel.findById(presentationId)
     }
 

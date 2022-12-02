@@ -71,4 +71,20 @@ export default {
         } as Slide)
         return mapToSlideListResponse(modifiedPresentation)
     }),
+    updateAnswer: controllerWrapper(async (event: IEvent) => {
+        const { presentationId, slideId, optionId } = event.body
+        const modifiedPresentation = await presentationService.updateAnswer(
+            presentationId,
+            slideId,
+            optionId,
+        )
+        if (!modifiedPresentation) return { ok: false }
+        else return { ok: true }
+    }),
+    getSlideById: controllerWrapper(async (event: IEvent) => {
+        const slideId = event.params.slideId
+        const presentationId = event.body.presentationId
+        const slide = await presentationService.getSlideById(presentationId, slideId)
+        return mapToSlideResponse(slide)
+    }),
 }

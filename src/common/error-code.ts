@@ -139,6 +139,14 @@ export const PRESENTATION_ERROR_CODE = {
         statusCode: 400,
         message: 'Not having permission',
     },
+    SLIDE_NOT_FOUND: {
+        statusCode: 400,
+        message: 'Slide not found',
+    },
+    OPTION_NOT_FOUND: {
+        statusCode: 400,
+        message: 'Option not found',
+    },
 }
 export const GENERAL_ERROR_CODE = {
     UNKNOWN_ERROR: {
