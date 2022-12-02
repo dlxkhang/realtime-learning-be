@@ -41,6 +41,25 @@ class PresentationRepository {
     async deleteById(presentationId: string): Promise<Presentation> {
         return await presentationModel.findByIdAndDelete(presentationId)
     }
+
+    //get list of presentation by user id
+    async getPresentationListByUserId(userId: string): Promise<Presentation[]> {
+        return await presentationModel.find(
+            {
+                createBy: userId,
+            },
+            {},
+            {
+                populate: [
+                    {
+                        path: 'createBy',
+                        select: 'fullName avatar',
+                    },
+                ],
+                lean: true,
+            },
+        )
+    }
 }
 
 export default new PresentationRepository()

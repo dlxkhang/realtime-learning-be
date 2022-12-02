@@ -44,4 +44,11 @@ const mapToOptionResponse = (option: Option): OptionResponse => {
         vote: option.vote,
     }
 }
+// map to list of presentation response
+const mapToPresentationListResponse = (
+    presentationList: Presentation[],
+): PresentationResponse[] => {
+    return presentationList.map(mapToPresentationResponse)
+}
+
 export { mapToPresentationResponse, mapToSlideResponse, mapToSlideListResponse }

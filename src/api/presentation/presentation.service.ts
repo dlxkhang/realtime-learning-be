@@ -210,6 +210,23 @@ class PresentationService {
             } else throw e
         }
     }
+    // get presentation list by userId
+    async getPresentationListByUserId(userId: string): Promise<Presentation[]> {
+        try {
+            if (!userId) {
+                throw PRESENTATION_ERROR_CODE.PRESENTATION_MISSING_ID
+            }
+            const presentationList = await this.repository.getPresentationListByUserId(userId)
+            if (!presentationList) {
+                throw PRESENTATION_ERROR_CODE.PRESENTATION_NOT_FOUND
+            }
+            return presentationList
+        } catch (e) {
+            if (e instanceof Error.CastError) {
+                throw PRESENTATION_ERROR_CODE.PRESENTATION_INVALID_ID
+            } else throw e
+        }
+    }
 }
 
 export default new PresentationService()

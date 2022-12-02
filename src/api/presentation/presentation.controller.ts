@@ -87,4 +87,10 @@ export default {
         const slide = await presentationService.getSlideById(presentationId, slideId)
         return mapToSlideResponse(slide)
     }),
+    // get list of presentation by user id
+    getPresentationListByUserId: controllerWrapper(async (event: IEvent) => {
+        const userId = event.user._id.toString()
+        const presentationList = await presentationService.getPresentationListByUserId(userId)
+        return presentationList.map((presentation) => mapToPresentationResponse(presentation))
+    }),
 }

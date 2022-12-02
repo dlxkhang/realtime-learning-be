@@ -52,4 +52,10 @@ router.get(
     passport.authenticate('jwt', { session: false }),
     presentationController.getSlideById,
 )
+// get list of presentation by user id
+router.get(
+    '/get-all',
+    passport.authenticate('jwt', { session: false }),
+    presentationController.getPresentationListByUserId,
+)
 export default router
