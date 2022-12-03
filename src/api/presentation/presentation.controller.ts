@@ -73,19 +73,17 @@ export default {
         return mapToSlideListResponse(modifiedPresentation)
     }),
     updateAnswer: controllerWrapper(async (event: IEvent) => {
-        const { presentationId, slideId, optionId } = event.body
+        const { presentationCode, optionId } = event.body
         const modifiedPresentation = await presentationService.updateAnswer(
-            presentationId,
-            slideId,
+            presentationCode,
             optionId,
         )
         if (!modifiedPresentation) return { ok: false }
         else return { ok: true }
     }),
-    getSlideById: controllerWrapper(async (event: IEvent) => {
-        const slideId = event.params.slideId
-        const presentationId = event.body.presentationId
-        const slide = await presentationService.getSlideById(presentationId, slideId)
+    getPresentingSlide: controllerWrapper(async (event: IEvent) => {
+        const { presentationCode } = event.params
+        const slide = await presentationService.getPresentingSlide(presentationCode)
         return mapToSlideResponse(slide)
     }),
     // get list of presentation by user id
@@ -93,5 +91,15 @@ export default {
         const userId = event.user._id.toString()
         const presentationList = await presentationService.getPresentationListByUserId(userId)
         return presentationList.map((presentation) => mapToPresentationResponse(presentation))
+    }),
+
+    updatePresentStatus: controllerWrapper(async (event: IEvent) => {
+        const { presentationId, slideId, isPresenting } = event.body
+        const slide = await presentationService.updatePresentStatus(
+            presentationId,
+            slideId,
+            isPresenting,
+        )
+        return mapToSlideResponse(slide)
     }),
 }

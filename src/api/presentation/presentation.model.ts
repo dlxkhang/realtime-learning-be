@@ -4,7 +4,7 @@ import userModel from '../user/model/user.model'
 const { Schema } = mongoose
 const Option = new Schema<Option>({
     answer: { type: String, required: true },
-    vote: { type: Number },
+    votes: { type: Number },
 })
 
 const Slide = new Schema<Slide>({

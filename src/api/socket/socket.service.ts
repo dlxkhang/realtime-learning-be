@@ -1,6 +1,7 @@
 import http from 'http'
 import { Server } from 'socket.io'
 import { corsOptions } from '../../config'
+import { SocketEvent } from './event'
 
 class SocketService {
     private io: Server
@@ -10,14 +11,16 @@ class SocketService {
             cors: corsOptions,
         })
         this.io.on('connection', (socket) => {
-            console.log(`User ${socket.id} connected`)
-            socket.on('disconnecting', () => {
-                console.log(`User ${socket.id} disconnected`)
+            socket.on('disconnecting', () => {})
+
+            socket.on(SocketEvent.JOIN_ROOM, (message) => {
+                const { roomId } = message
+                socket.join(`${roomId}`)
             })
         })
     }
 
-    broadcastToRoom(roomId: string, event: string, message: any) {
+    broadcastToRoom(roomId: string, event: string, message?: any) {
         this.io.to(roomId).emit(event, message)
     }
 }

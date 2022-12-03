@@ -4,6 +4,8 @@ import presentationRepository from './presentation.repository'
 import { Error } from 'mongoose'
 import * as crypto from 'crypto-js'
 import userModel from '../user/model/user.model'
+import socketService from '../socket/socket.service'
+import { SocketEvent } from '../socket/event'
 
 class PresentationService {
     private repository: typeof presentationRepository
@@ -161,6 +163,7 @@ class PresentationService {
                 ...newSlideInfo,
             }
             presentation.slideList[modifiedSlideIdx] = newSlide
+
             const modifiedPresentation = await this.repository.editById(
                 presentationId,
                 presentation,
@@ -173,37 +176,42 @@ class PresentationService {
         }
     }
 
-    async updateAnswer(presentationId: any, slideId: any, optionId: any) {
-        const presentation = await this.repository.getPrentationById(presentationId)
+    async updateAnswer(presentationCode: any, optionId: any) {
+        const presentation = await this.repository.getPrentationByCode(presentationCode)
         if (!presentation) {
             throw PRESENTATION_ERROR_CODE.PRESENTATION_NOT_FOUND
         }
-        const slide = presentation.slideList.find((slide) => slide._id.toString() === slideId)
+        const slide = presentation.slideList[presentation.currentSlide]
         if (!slide) {
             throw PRESENTATION_ERROR_CODE.SLIDE_NOT_FOUND
         }
+
         const option: Option = slide.optionList.find((option) => option._id.toString() === optionId)
         if (!option) {
             throw PRESENTATION_ERROR_CODE.OPTION_NOT_FOUND
         }
-        option.vote += 1
-        const modifiedPresentation = await this.repository.editById(presentationId, presentation)
+        option.votes += 1
+        const modifiedPresentation = await this.repository.editById(presentation._id, presentation)
+
+        // Broadcast the results to all users watching the slide
+        socketService.broadcastToRoom(presentationCode, SocketEvent.UPDATE_RESULTS, {
+            slide,
+        })
         return modifiedPresentation
     }
-    async getSlideById(presentationId: string, slideId: string): Promise<Slide> {
+
+    async getPresentingSlide(presentationCode: string): Promise<Slide> {
         try {
-            if (!slideId) {
-                throw PRESENTATION_ERROR_CODE.PRESENTATION_MISSING_ID
-            }
-            const presentation = await this.repository.getPrentationById(presentationId)
+            const presentation = await this.repository.getPrentationByCode(presentationCode)
+
             if (!presentation) {
                 throw PRESENTATION_ERROR_CODE.PRESENTATION_NOT_FOUND
             }
-            const slide = presentation.slideList.find((slide) => slide._id.toString() === slideId)
-            if (!slide) {
-                throw PRESENTATION_ERROR_CODE.SLIDE_NOT_FOUND
+
+            if (!presentation.isPresenting) {
+                throw PRESENTATION_ERROR_CODE.SLIDE_NOT_PRESENTING
             }
-            return slide
+            return presentation.slideList[presentation.currentSlide]
         } catch (e) {
             if (e instanceof Error.CastError) {
                 throw PRESENTATION_ERROR_CODE.PRESENTATION_INVALID_ID
@@ -221,6 +229,45 @@ class PresentationService {
                 throw PRESENTATION_ERROR_CODE.PRESENTATION_NOT_FOUND
             }
             return presentationList
+        } catch (e) {
+            if (e instanceof Error.CastError) {
+                throw PRESENTATION_ERROR_CODE.PRESENTATION_INVALID_ID
+            } else throw e
+        }
+    }
+
+    async updatePresentStatus(
+        presentationId: string,
+        slideId: string,
+        isPresenting: boolean,
+    ): Promise<Slide> {
+        try {
+            const presentation = await this.repository.getPrentationById(presentationId)
+            if (!presentation) {
+                throw PRESENTATION_ERROR_CODE.PRESENTATION_NOT_FOUND
+            }
+
+            const slideIndex: number = presentation.slideList.findIndex(
+                (slide) => slide._id.toString() === slideId,
+            )
+            if (slideIndex === -1) {
+                throw PRESENTATION_ERROR_CODE.SLIDE_NOT_FOUND
+            }
+
+            const updatePresentation = await this.repository.updatePresentingStatus(
+                presentationId,
+                slideIndex,
+                isPresenting,
+            )
+
+            if (!updatePresentation.isPresenting) {
+                // Announce client that the presentation has stopped
+                socketService.broadcastToRoom(
+                    updatePresentation.inviteCode,
+                    SocketEvent.END_PRESENTING,
+                )
+            }
+            return updatePresentation.slideList[updatePresentation.currentSlide]
         } catch (e) {
             if (e instanceof Error.CastError) {
                 throw PRESENTATION_ERROR_CODE.PRESENTATION_INVALID_ID

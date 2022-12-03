@@ -41,7 +41,7 @@ const mapToOptionResponse = (option: Option): OptionResponse => {
     return {
         id: option._id,
         answer: option.answer,
-        vote: option.vote,
+        votes: option.votes,
     }
 }
 // map to list of presentation response
