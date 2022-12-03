@@ -43,11 +43,13 @@ router.put(
     presentationController.editSlideById,
 )
 router.post('/slide/update-answer', presentationController.updateAnswer)
-router.get('/slide/get/:presentationId&:slideId', presentationController.getSlideById)
+router.get('/slide/get/:presentationCode', presentationController.getPresentingSlide)
 // get list of presentation by user id
 router.get(
     '/get-all',
     passport.authenticate('jwt', { session: false }),
     presentationController.getPresentationListByUserId,
 )
+
+router.post('/slide/update-present-status', presentationController.updatePresentStatus)
 export default router

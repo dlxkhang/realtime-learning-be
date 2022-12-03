@@ -151,6 +151,10 @@ export const PRESENTATION_ERROR_CODE = {
         statusCode: 400,
         message: 'User not found',
     },
+    SLIDE_NOT_PRESENTING: {
+        statusCode: 400,
+        message: 'Slide is not presenting',
+    },
 }
 export const GENERAL_ERROR_CODE = {
     UNKNOWN_ERROR: {

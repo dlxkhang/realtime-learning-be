@@ -15,13 +15,12 @@ class SocketService {
 
             socket.on(SocketEvent.JOIN_ROOM, (message) => {
                 const { roomId } = message
-
                 socket.join(`${roomId}`)
             })
         })
     }
 
-    broadcastToRoom(roomId: string, event: string, message: any) {
+    broadcastToRoom(roomId: string, event: string, message?: any) {
         this.io.to(roomId).emit(event, message)
     }
 }

@@ -1,3 +1,4 @@
+import { PRESENTATION_ERROR_CODE } from '../../common/error-code'
 import { Presentation, Slide } from '../../interfaces/presentation/presentation.interface'
 import presentationModel from './presentation.model'
 
@@ -44,6 +45,22 @@ class PresentationRepository {
         )
     }
 
+    async getPrentationByCode(code: string): Promise<Presentation> {
+        return await presentationModel.findOne(
+            { inviteCode: code },
+            {},
+            {
+                populate: [
+                    {
+                        path: 'createBy',
+                        select: 'fullName avatar',
+                    },
+                ],
+                lean: true,
+            },
+        )
+    }
+
     async deleteById(presentationId: string): Promise<Presentation> {
         return await presentationModel
             .findByIdAndDelete(presentationId)
@@ -71,6 +88,29 @@ class PresentationRepository {
                 lean: true,
             },
         )
+    }
+
+    async updatePresentingStatus(
+        presentationId: string,
+        currentSlide: number,
+        isPresenting: boolean,
+    ): Promise<Presentation> {
+        return await presentationModel
+            .findByIdAndUpdate(
+                presentationId,
+                {
+                    isPresenting,
+                    currentSlide,
+                },
+                {
+                    new: true,
+                },
+            )
+            .populate({
+                path: 'createBy',
+                select: 'fullName avatar',
+            })
+            .lean()
     }
 }
 

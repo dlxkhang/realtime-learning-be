@@ -3,7 +3,7 @@ import { IUser } from '../user'
 interface Option {
     _id: string
     answer: string
-    vote: number
+    votes: number
 }
 interface Slide {
     _id: string
@@ -42,7 +42,7 @@ interface SlideResponse {
 interface OptionResponse {
     id: string
     answer: string
-    vote: Number
+    votes: Number
 }
 
 export { Option, Slide, Presentation, PresentationResponse, SlideResponse, OptionResponse }
