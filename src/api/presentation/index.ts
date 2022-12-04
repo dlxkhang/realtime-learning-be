@@ -28,7 +28,7 @@ router.post(
     presentationController.addSlide,
 )
 router.delete(
-    '/slide/delete/:slideId',
+    '/slide/delete/:presentationId&:slideId',
     passport.authenticate('jwt', { session: false }),
     presentationController.deleteSlideById,
 )
