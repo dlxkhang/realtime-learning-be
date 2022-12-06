@@ -1,3 +1,4 @@
+import { FilterQuery, QueryOptions, UpdateQuery } from 'mongoose'
 import { PRESENTATION_ERROR_CODE } from '../../common/error-code'
 import { Presentation, Slide } from '../../interfaces/presentation/presentation.interface'
 import presentationModel from './presentation.model'
@@ -111,6 +112,24 @@ class PresentationRepository {
                 select: 'fullName avatar',
             })
             .lean()
+    }
+
+    async findOneAndUpdate(
+        filter: FilterQuery<any>,
+        update: UpdateQuery<any>,
+        options?: QueryOptions<any>,
+    ): Promise<Presentation> {
+        return await presentationModel.findOneAndUpdate(filter, update, {
+            new: true,
+            lean: true,
+            populate: [
+                {
+                    path: 'createBy',
+                    select: 'fullName avatar',
+                },
+            ],
+            ...options,
+        })
     }
 }
 

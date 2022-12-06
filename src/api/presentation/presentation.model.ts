@@ -1,5 +1,6 @@
 import mongoose from 'mongoose'
 import { Option, Presentation, Slide } from '../../interfaces/presentation/presentation.interface'
+
 import userModel from '../user/model/user.model'
 const { Schema } = mongoose
 const Option = new Schema<Option>({
@@ -19,6 +20,7 @@ const Presentation = new Schema<Presentation>({
     currentSlide: { type: Number },
     inviteCode: { type: String },
     slideList: [{ type: Slide }],
+    messages: [{ type: Schema.Types.Mixed }],
 })
 
 export default mongoose.model('Presentations', Presentation)

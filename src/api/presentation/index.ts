@@ -52,4 +52,12 @@ router.get(
 )
 
 router.post('/slide/update-present-status', presentationController.updatePresentStatus)
+
+router.post('/chat/add-anonymous-message', presentationController.addAnonymousMessage)
+router.post(
+    '/chat/add-authenticated-message',
+    passport.authenticate('jwt', { session: false }),
+    presentationController.addAuthenticatedMessage,
+)
+router.get('/chat/messages/:presentationCode', presentationController.getMessages)
 export default router

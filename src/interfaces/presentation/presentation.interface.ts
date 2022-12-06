@@ -1,4 +1,5 @@
 import { Types } from 'mongoose'
+import { IMessage } from '../message/message.interface'
 import { IUser } from '../user'
 interface Option {
     _id: string
@@ -20,6 +21,7 @@ interface Presentation {
     currentSlide: number
     inviteCode: string
     slideList?: Slide[]
+    messages?: IMessage[]
 }
 
 interface PresentationResponse {
