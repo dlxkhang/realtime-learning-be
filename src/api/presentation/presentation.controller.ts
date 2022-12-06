@@ -4,6 +4,7 @@ import presentationRepository from './presentation.repository'
 import presentationService from './presentation.service'
 import { Option, Presentation, Slide } from '../../interfaces/presentation/presentation.interface'
 import { mapToPresentationResponse, mapToSlideResponse, mapToSlideListResponse } from './mapper'
+import { IMessage } from '../../interfaces/message/message.interface'
 
 export default {
     createPresentation: controllerWrapper(async (event: IEvent) => {
@@ -100,5 +101,37 @@ export default {
             isPresenting,
         )
         return mapToSlideResponse(slide)
+    }),
+
+    addAnonymousMessage: controllerWrapper(async (event: IEvent) => {
+        const { presentationCode, message } = event.body
+        const anonymousMessage: IMessage = {
+            title: 'Anonymous',
+            text: message,
+            date: new Date(),
+        }
+        const messages = await presentationService.addMessage(presentationCode, anonymousMessage)
+        return messages
+    }),
+
+    addAuthenticatedMessage: controllerWrapper(async (event: IEvent) => {
+        const { fullName } = event.user
+        const { presentationCode, message } = event.body
+        const authenticatedMessage: IMessage = {
+            title: fullName,
+            text: message,
+            date: new Date(),
+        }
+        const messages = await presentationService.addMessage(
+            presentationCode,
+            authenticatedMessage,
+        )
+        return messages
+    }),
+
+    getMessages: controllerWrapper(async (event: IEvent) => {
+        const { presentationCode } = event.params
+        const messages = await presentationService.getMessages(presentationCode)
+        return messages
     }),
 }

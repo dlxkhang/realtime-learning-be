@@ -5,7 +5,8 @@ import { Error } from 'mongoose'
 import * as crypto from 'crypto-js'
 import userModel from '../user/model/user.model'
 import socketService from '../socket/socket.service'
-import { SocketEvent } from '../socket/event'
+import { ChatEvent, PresentationEvent } from '../socket/event'
+import { IMessage } from '../../interfaces/message/message.interface'
 
 class PresentationService {
     private repository: typeof presentationRepository
@@ -194,7 +195,7 @@ class PresentationService {
         const modifiedPresentation = await this.repository.editById(presentation._id, presentation)
 
         // Broadcast the results to all users watching the slide
-        socketService.broadcastToRoom(presentationCode, SocketEvent.UPDATE_RESULTS, {
+        socketService.broadcastToRoom(presentationCode, PresentationEvent.UPDATE_RESULTS, {
             slide,
         })
         return modifiedPresentation
@@ -264,10 +265,55 @@ class PresentationService {
                 // Announce client that the presentation has stopped
                 socketService.broadcastToRoom(
                     updatePresentation.inviteCode,
-                    SocketEvent.END_PRESENTING,
+                    PresentationEvent.END_PRESENTING,
                 )
             }
             return updatePresentation.slideList[updatePresentation.currentSlide]
+        } catch (e) {
+            if (e instanceof Error.CastError) {
+                throw PRESENTATION_ERROR_CODE.PRESENTATION_INVALID_ID
+            } else throw e
+        }
+    }
+
+    async addMessage(presentationCode: string, newMessage: IMessage): Promise<IMessage[]> {
+        try {
+            const presentation = await this.repository.getPrentationByCode(presentationCode)
+            if (!presentation) {
+                throw PRESENTATION_ERROR_CODE.PRESENTATION_NOT_FOUND
+            }
+
+            const updatePresentation = await this.repository.findOneAndUpdate(
+                { inviteCode: presentationCode },
+                {
+                    $push: { messages: newMessage },
+                },
+            )
+
+            if (updatePresentation) {
+                // Announce to clients
+                socketService.broadcastToRoom(
+                    updatePresentation.inviteCode,
+                    ChatEvent.NEW_CHAT_MESSAGE,
+                    newMessage,
+                )
+            }
+            return updatePresentation.messages
+        } catch (e) {
+            if (e instanceof Error.CastError) {
+                throw PRESENTATION_ERROR_CODE.PRESENTATION_INVALID_ID
+            } else throw e
+        }
+    }
+
+    async getMessages(presentationCode: string): Promise<IMessage[]> {
+        try {
+            const presentation = await this.repository.getPrentationByCode(presentationCode)
+            if (!presentation) {
+                throw PRESENTATION_ERROR_CODE.PRESENTATION_NOT_FOUND
+            }
+
+            return presentation.messages
         } catch (e) {
             if (e instanceof Error.CastError) {
                 throw PRESENTATION_ERROR_CODE.PRESENTATION_INVALID_ID
