@@ -131,7 +131,8 @@ export default {
 
     getMessages: controllerWrapper(async (event: IEvent) => {
         const { presentationCode } = event.params
-        const messages = await presentationService.getMessages(presentationCode)
+        const { page, pageSize } = event.query
+        const messages = await presentationService.getMessages(presentationCode, { page, pageSize })
         return messages
     }),
 }

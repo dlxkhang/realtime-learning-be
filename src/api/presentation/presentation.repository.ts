@@ -1,4 +1,4 @@
-import { FilterQuery, QueryOptions, UpdateQuery } from 'mongoose'
+import { FilterQuery, QueryOptions, UpdateQuery, PipelineStage, AggregateOptions } from 'mongoose'
 import { PRESENTATION_ERROR_CODE } from '../../common/error-code'
 import { Presentation, Slide } from '../../interfaces/presentation/presentation.interface'
 import presentationModel from './presentation.model'
@@ -30,7 +30,7 @@ class PresentationRepository {
             .lean()
     }
 
-    async getPrentationById(presentationId: string): Promise<Presentation> {
+    async getPresentationById(presentationId: string): Promise<Presentation> {
         return await presentationModel.findById(
             presentationId,
             {},
@@ -46,7 +46,7 @@ class PresentationRepository {
         )
     }
 
-    async getPrentationByCode(code: string): Promise<Presentation> {
+    async getPresentationByCode(code: string): Promise<Presentation> {
         return await presentationModel.findOne(
             { inviteCode: code },
             {},
@@ -130,6 +130,12 @@ class PresentationRepository {
             ],
             ...options,
         })
+    }
+    async aggregate(
+        pipeline: PipelineStage[],
+        options: AggregateOptions = {},
+    ): Promise<Presentation[]> {
+        return await presentationModel.aggregate(pipeline, options)
     }
 }
 
