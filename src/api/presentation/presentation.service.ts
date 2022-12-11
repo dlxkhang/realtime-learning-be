@@ -1,7 +1,7 @@
 import { PRESENTATION_ERROR_CODE } from '../../common/error-code'
 import { Option, Presentation, Slide } from '../../interfaces/presentation/presentation.interface'
 import presentationRepository from './presentation.repository'
-import { Error } from 'mongoose'
+import { Error, PipelineStage } from 'mongoose'
 import * as crypto from 'crypto-js'
 import userModel from '../user/model/user.model'
 import socketService from '../socket/socket.service'
@@ -40,7 +40,7 @@ class PresentationService {
             if (!presentationId) {
                 throw PRESENTATION_ERROR_CODE.PRESENTATION_MISSING_ID
             }
-            const presentation = await this.repository.getPrentationById(presentationId)
+            const presentation = await this.repository.getPresentationById(presentationId)
             if (!presentation) {
                 throw PRESENTATION_ERROR_CODE.PRESENTATION_NOT_FOUND
             }
@@ -94,7 +94,7 @@ class PresentationService {
             if (!presentationId) {
                 throw PRESENTATION_ERROR_CODE.PRESENTATION_MISSING_ID
             }
-            const presentation = await this.repository.getPrentationById(presentationId)
+            const presentation = await this.repository.getPresentationById(presentationId)
             if (!presentation) {
                 throw PRESENTATION_ERROR_CODE.PRESENTATION_NOT_FOUND
             }
@@ -118,7 +118,7 @@ class PresentationService {
             if (!presentationId) {
                 throw PRESENTATION_ERROR_CODE.PRESENTATION_MISSING_ID
             }
-            const presentation = await this.repository.getPrentationById(presentationId)
+            const presentation = await this.repository.getPresentationById(presentationId)
             if (!presentation) {
                 throw PRESENTATION_ERROR_CODE.PRESENTATION_NOT_FOUND
             }
@@ -146,7 +146,7 @@ class PresentationService {
         newSlideInfo: Slide,
     ): Promise<Presentation> {
         try {
-            const presentation: Presentation = await this.repository.getPrentationById(
+            const presentation: Presentation = await this.repository.getPresentationById(
                 presentationId,
             )
             if (!presentation) {
@@ -178,7 +178,7 @@ class PresentationService {
     }
 
     async updateAnswer(presentationCode: any, optionId: any) {
-        const presentation = await this.repository.getPrentationByCode(presentationCode)
+        const presentation = await this.repository.getPresentationByCode(presentationCode)
         if (!presentation) {
             throw PRESENTATION_ERROR_CODE.PRESENTATION_NOT_FOUND
         }
@@ -203,7 +203,7 @@ class PresentationService {
 
     async getPresentingSlide(presentationCode: string): Promise<Slide> {
         try {
-            const presentation = await this.repository.getPrentationByCode(presentationCode)
+            const presentation = await this.repository.getPresentationByCode(presentationCode)
 
             if (!presentation) {
                 throw PRESENTATION_ERROR_CODE.PRESENTATION_NOT_FOUND
@@ -243,7 +243,7 @@ class PresentationService {
         isPresenting: boolean,
     ): Promise<Slide> {
         try {
-            const presentation = await this.repository.getPrentationById(presentationId)
+            const presentation = await this.repository.getPresentationById(presentationId)
             if (!presentation) {
                 throw PRESENTATION_ERROR_CODE.PRESENTATION_NOT_FOUND
             }
@@ -278,7 +278,7 @@ class PresentationService {
 
     async addMessage(presentationCode: string, newMessage: IMessage): Promise<IMessage[]> {
         try {
-            const presentation = await this.repository.getPrentationByCode(presentationCode)
+            const presentation = await this.repository.getPresentationByCode(presentationCode)
             if (!presentation) {
                 throw PRESENTATION_ERROR_CODE.PRESENTATION_NOT_FOUND
             }
@@ -306,14 +306,58 @@ class PresentationService {
         }
     }
 
-    async getMessages(presentationCode: string): Promise<IMessage[]> {
+    async getMessages(
+        presentationCode: string,
+        options: { page?: string; pageSize?: string; sort?: any } = {},
+    ): Promise<IMessage[]> {
         try {
-            const presentation = await this.repository.getPrentationByCode(presentationCode)
-            if (!presentation) {
-                throw PRESENTATION_ERROR_CODE.PRESENTATION_NOT_FOUND
+            const { page, pageSize } = options
+            const skipPipe: PipelineStage = page &&
+                pageSize && {
+                    $skip: (parseInt(page) - 1) * parseInt(pageSize),
+                }
+            const limitPipe: PipelineStage = pageSize && {
+                $limit: parseInt(pageSize),
             }
-
-            return presentation.messages
+            const pipeline: PipelineStage[] = [
+                {
+                    $match: {
+                        inviteCode: presentationCode,
+                    },
+                },
+                {
+                    $unwind: '$messages',
+                },
+                {
+                    $project: {
+                        message: '$messages',
+                    },
+                },
+                {
+                    $sort: {
+                        'message.date': -1,
+                    },
+                },
+            ]
+            if (skipPipe) {
+                pipeline.push(skipPipe)
+            }
+            if (limitPipe) {
+                pipeline.push(limitPipe)
+            }
+            pipeline.push({
+                $group: {
+                    _id: '_id',
+                    messages: {
+                        $push: '$message',
+                    },
+                },
+            })
+            console.log('pipeline', JSON.stringify(pipeline))
+            const presentations = await this.repository.aggregate(pipeline)
+            console.log('Presentations', presentations)
+            const messages = presentations?.[0]?.messages ?? []
+            return messages
         } catch (e) {
             if (e instanceof Error.CastError) {
                 throw PRESENTATION_ERROR_CODE.PRESENTATION_INVALID_ID
