@@ -106,7 +106,11 @@ export const INVITATION_ERROR_CODE = {
     },
     INVITEE_DUPLICATED: {
         statusCode: 400,
-        message: 'Invitee already a member of this group',
+        message: 'Duplicated invitee',
+    },
+    PRESENTATION_ID_NOT_FOUND: {
+        statusCode: 400,
+        message: 'Invalid presentation ID',
     },
 }
 export const PRESENTATION_ERROR_CODE = {
@@ -154,6 +158,10 @@ export const PRESENTATION_ERROR_CODE = {
     SLIDE_NOT_PRESENTING: {
         statusCode: 400,
         message: 'Slide is not presenting',
+    },
+    DUPLICATE_COLLABORATOR: {
+        statusCode: 400,
+        message: 'Collaborator is duplicated',
     },
 }
 export const GENERAL_ERROR_CODE = {

@@ -22,6 +22,7 @@ interface Presentation {
     inviteCode: string
     slideList?: Slide[]
     messages?: IMessage[]
+    collaborators?: IUser[]
 }
 
 interface PresentationResponse {
@@ -33,6 +34,7 @@ interface PresentationResponse {
     currentSlide: number
     inviteCode: string
     slideList?: SlideResponse[]
+    collaborators?: IUser[]
 }
 
 interface SlideResponse {
