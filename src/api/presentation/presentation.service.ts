@@ -1,7 +1,9 @@
 import { SlideType } from '../../enums'
 import { PRESENTATION_ERROR_CODE } from '../../common/error-code'
 import {
+    IHeadingSlide,
     IMultipleChoiceSlide,
+    IParagraphSlide,
     Option,
     Presentation,
     Slide,
@@ -169,6 +171,7 @@ class PresentationService {
                 _id: slideId,
                 ...newSlideInfo,
             }
+            console.log('newSlide', newSlide)
             presentation.slideList[modifiedSlideIdx] = newSlide
 
             const modifiedPresentation = await this.repository.editById(

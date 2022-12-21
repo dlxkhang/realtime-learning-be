@@ -1,18 +1,20 @@
 import mongoose from 'mongoose'
-import { Presentation, Slide } from '../../interfaces/presentation/presentation.interface'
+import {
+    IHeadingSlide,
+    IMultipleChoiceSlide,
+    IParagraphSlide,
+    Presentation,
+    Slide,
+} from '../../interfaces'
 
 const { Schema } = mongoose
-// const Option = new Schema<Option>({
-//     answer: { type: String, required: true },
-//     votes: { type: Number },
-// })
-
-// const MultipleChoiceSlide = new Schema<IMultipleChoiceSlide>({
-//     text: { type: String },
-//     optionList: [{ type: Option }],
-// })
-const Slide = new Schema<Slide>({
+const Slide = new Schema<IHeadingSlide | IMultipleChoiceSlide | IParagraphSlide>({
     type: { type: String },
+    text: { type: String },
+    optionList: [{ type: Schema.Types.Mixed }],
+    heading: { type: String },
+    subHeading: { type: String },
+    paragraph: { type: String },
 })
 const Presentation = new Schema<Presentation>({
     name: { type: String },

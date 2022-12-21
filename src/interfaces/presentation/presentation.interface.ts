@@ -8,7 +8,7 @@ interface Option {
     votes: number
 }
 interface Slide {
-    _id: string
+    _id?: string
     type: SlideType
 }
 interface IMultipleChoiceSlide extends Slide {

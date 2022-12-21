@@ -15,9 +15,8 @@ import {
     IParagraphSlideResponse,
 } from '../../interfaces/presentation/presentation.interface'
 import { mapTo as userMapper } from '../user/mapper'
-const mapToSlideListResponse = (presentation: Presentation): SlideResponse[] => {
-    const slideList = presentation.slideList.map(mapToSlideResponse)
-    return slideList
+const mapToSlideListResponse = (slideList: Slide[]): SlideResponse[] => {
+    return slideList.map(mapToSlideResponse)
 }
 const mapToPresentationResponse = (presentation: Presentation): PresentationResponse => {
     let transformedCreateBy
@@ -32,7 +31,7 @@ const mapToPresentationResponse = (presentation: Presentation): PresentationResp
         createBy: transformedCreateBy,
         isPresenting: presentation.isPresenting,
         currentSlide: presentation.currentSlide,
-        slideList: mapToSlideListResponse(presentation),
+        slideList: [],
         inviteCode: presentation.inviteCode,
     }
 }
