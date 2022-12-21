@@ -148,7 +148,7 @@ class PresentationRepository {
     async findById(
         id: any,
         projection?: ProjectionType<any>,
-        options?: QueryOptions<any>,
+        options?: QueryOptions<Presentation>,
     ): Promise<Presentation> {
         const { populate, ...otherOptions } = options
         return await presentationModel.findById(id, projection, {
@@ -157,7 +157,27 @@ class PresentationRepository {
             populate: [
                 {
                     path: 'createBy',
-                    select: 'fullName avatar',
+                    select: 'fullName avatar email',
+                },
+                ...(populate as any),
+            ],
+            ...otherOptions,
+        })
+    }
+
+    async findOne(
+        filter: FilterQuery<Presentation>,
+        projection?: ProjectionType<any>,
+        options?: QueryOptions<any>,
+    ): Promise<Presentation> {
+        const { populate, ...otherOptions } = options
+        return await presentationModel.findOne(filter, projection, {
+            new: true,
+            lean: true,
+            populate: [
+                {
+                    path: 'createBy',
+                    select: 'fullName avatar email',
                 },
                 ...(populate as any),
             ],

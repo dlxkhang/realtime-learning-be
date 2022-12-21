@@ -366,7 +366,11 @@ class PresentationService {
         }
     }
 
-    async getCollaborators(presentationId: string): Promise<IUser[]> {
+    async getCollaborators(
+        presentationId: string,
+
+        options: { skip?: number; limit?: number } = {},
+    ): Promise<IUser[]> {
         try {
             if (!presentationId) {
                 throw PRESENTATION_ERROR_CODE.PRESENTATION_MISSING_ID
@@ -379,6 +383,9 @@ class PresentationService {
                         {
                             path: 'collaborators',
                             select: 'fullName avatar email',
+                            options: {
+                                ...options,
+                            },
                         },
                     ],
                 },
@@ -387,6 +394,7 @@ class PresentationService {
                 throw PRESENTATION_ERROR_CODE.PRESENTATION_NOT_FOUND
             }
 
+            if (!presentation.collaborators) return []
             return presentation.collaborators
         } catch (e) {
             if (e instanceof Error.CastError) {
@@ -473,6 +481,34 @@ class PresentationService {
                 },
             )
             return updatedPresentation.collaborators
+        } catch (e) {
+            if (e instanceof Error.CastError) {
+                throw PRESENTATION_ERROR_CODE.PRESENTATION_INVALID_ID
+            } else throw e
+        }
+    }
+
+    async getCollaboratedPresentations(userId: string): Promise<IUser[]> {
+        try {
+            const presentation = await this.repository.findOne(
+                {
+                    collaborators: userId,
+                },
+                {},
+                {
+                    populate: [
+                        {
+                            path: 'collaborators',
+                            select: 'fullName avatar email',
+                        },
+                    ],
+                },
+            )
+            if (!presentation) {
+                throw PRESENTATION_ERROR_CODE.PRESENTATION_NOT_FOUND
+            }
+
+            return presentation.collaborators
         } catch (e) {
             if (e instanceof Error.CastError) {
                 throw PRESENTATION_ERROR_CODE.PRESENTATION_INVALID_ID

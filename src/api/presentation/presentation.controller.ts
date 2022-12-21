@@ -139,7 +139,11 @@ export default {
 
     getCollaborators: controllerWrapper(async (event: IEvent) => {
         const { presentationId } = event.params
-        const collaborators = await presentationService.getCollaborators(presentationId)
+        const { skip, limit } = event.query
+        const collaborators = await presentationService.getCollaborators(presentationId, {
+            skip,
+            limit,
+        })
         return collaborators.map((collaborator) => userMapper(collaborator))
     }),
 
