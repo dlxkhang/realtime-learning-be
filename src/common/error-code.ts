@@ -163,6 +163,10 @@ export const PRESENTATION_ERROR_CODE = {
         statusCode: 400,
         message: 'Collaborator is duplicated',
     },
+    COLLABORATOR_NOT_FOUND: {
+        statusCode: 404,
+        message: 'Collaborator not found',
+    },
 }
 export const GENERAL_ERROR_CODE = {
     UNKNOWN_ERROR: {

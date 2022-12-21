@@ -1,10 +1,11 @@
-import { IEvent } from '../../interfaces'
+import { IEvent, IUser } from '../../interfaces'
 import controllerWrapper from '../../core/controllerWrapper'
 import presentationRepository from './presentation.repository'
 import presentationService from './presentation.service'
 import { Option, Presentation, Slide } from '../../interfaces/presentation/presentation.interface'
 import { mapToPresentationResponse, mapToSlideResponse, mapToSlideListResponse } from './mapper'
 import { IMessage } from '../../interfaces/message/message.interface'
+import { mapTo as userMapper } from '../user/mapper'
 
 export default {
     createPresentation: controllerWrapper(async (event: IEvent) => {
@@ -134,5 +135,20 @@ export default {
         const { page, pageSize } = event.query
         const messages = await presentationService.getMessages(presentationCode, { page, pageSize })
         return messages
+    }),
+
+    getCollaborators: controllerWrapper(async (event: IEvent) => {
+        const { presentationId } = event.params
+        const collaborators = await presentationService.getCollaborators(presentationId)
+        return collaborators.map((collaborator) => userMapper(collaborator))
+    }),
+
+    removeCollaborator: controllerWrapper(async (event: IEvent) => {
+        const { presentationId, collaboratorId } = event.params
+        const collaborators = await presentationService.removeCollaborator(
+            presentationId,
+            collaboratorId,
+        )
+        return collaborators.map((collaborator) => userMapper(collaborator))
     }),
 }

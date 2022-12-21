@@ -436,6 +436,49 @@ class PresentationService {
             } else throw e
         }
     }
+
+    async removeCollaborator(presentationId: string, collaboratorId: string): Promise<IUser[]> {
+        try {
+            if (!presentationId) {
+                throw PRESENTATION_ERROR_CODE.PRESENTATION_MISSING_ID
+            }
+            const presentation = await this.repository.findById(
+                presentationId,
+                {},
+                {
+                    populate: [
+                        {
+                            path: 'collaborators',
+                        },
+                    ],
+                },
+            )
+            if (!presentation) {
+                throw PRESENTATION_ERROR_CODE.PRESENTATION_NOT_FOUND
+            }
+            if (
+                presentation.collaborators &&
+                !presentation.collaborators.find((item) => item._id === collaboratorId)
+            )
+                throw PRESENTATION_ERROR_CODE.COLLABORATOR_NOT_FOUND
+
+            const updatedPresentation = await this.repository.findOneAndUpdate(
+                {
+                    _id: presentationId,
+                },
+                {
+                    $pop: {
+                        collaborators: collaboratorId,
+                    },
+                },
+            )
+            return updatedPresentation.collaborators
+        } catch (e) {
+            if (e instanceof Error.CastError) {
+                throw PRESENTATION_ERROR_CODE.PRESENTATION_INVALID_ID
+            } else throw e
+        }
+    }
 }
 
 export default new PresentationService()
