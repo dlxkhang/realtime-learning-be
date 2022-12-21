@@ -1,4 +1,5 @@
 import { Types } from 'mongoose'
+import { SlideType } from '../../enums'
 import {
     PresentationResponse,
     SlideResponse,
@@ -6,6 +7,12 @@ import {
     Presentation,
     Slide,
     OptionResponse,
+    IMultipleChoiceSlide,
+    IMultipleChoiceSlideResponse,
+    IHeadingSlide,
+    IHeadingSlideResponse,
+    IParagraphSlide,
+    IParagraphSlideResponse,
 } from '../../interfaces/presentation/presentation.interface'
 import { mapTo as userMapper } from '../user/mapper'
 const mapToSlideListResponse = (presentation: Presentation): SlideResponse[] => {
@@ -30,12 +37,42 @@ const mapToPresentationResponse = (presentation: Presentation): PresentationResp
     }
 }
 const mapToSlideResponse = (slide: Slide): SlideResponse => {
-    const optionListResponse = slide.optionList.map(mapToOptionResponse)
-    return {
+    let response: SlideResponse = {
         id: slide._id,
-        text: slide.text,
-        optionList: optionListResponse,
+        type: slide.type,
     }
+    switch (slide.type) {
+        case SlideType.MULTIPLE_CHOICE:
+            const multipleChoiceSlide: IMultipleChoiceSlide = slide as IMultipleChoiceSlide
+            const optionList = multipleChoiceSlide?.optionList?.map((option) =>
+                mapToOptionResponse(option),
+            )
+            response = {
+                ...response,
+                text: multipleChoiceSlide.text,
+                optionList: optionList,
+            } as IMultipleChoiceSlideResponse
+            break
+        case SlideType.HEADING:
+            const headingSlide: IHeadingSlide = slide as IHeadingSlide
+            response = {
+                ...response,
+                heading: headingSlide.heading,
+                subHeading: headingSlide.subHeading,
+            } as IHeadingSlideResponse
+            break
+        case SlideType.PARAGRAPH:
+            const paragraphSlide: IParagraphSlide = slide as IParagraphSlide
+            response = {
+                ...response,
+                heading: paragraphSlide.heading,
+                paragraph: paragraphSlide.paragraph,
+            } as IParagraphSlideResponse
+            break
+        default:
+            break
+    }
+    return response
 }
 const mapToOptionResponse = (option: Option): OptionResponse => {
     return {

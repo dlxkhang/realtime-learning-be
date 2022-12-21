@@ -1,10 +1,19 @@
+import { PRESENTATION_ERROR_CODE } from './../../common/error-code'
 import { IEvent } from '../../interfaces'
 import controllerWrapper from '../../core/controllerWrapper'
 import presentationRepository from './presentation.repository'
 import presentationService from './presentation.service'
-import { Option, Presentation, Slide } from '../../interfaces/presentation/presentation.interface'
+import {
+    IHeadingSlide,
+    IMultipleChoiceSlide,
+    IParagraphSlide,
+    Option,
+    Presentation,
+    Slide,
+} from '../../interfaces/presentation/presentation.interface'
 import { mapToPresentationResponse, mapToSlideResponse, mapToSlideListResponse } from './mapper'
 import { IMessage } from '../../interfaces/message/message.interface'
+import { SlideType } from '../../enums'
 
 export default {
     createPresentation: controllerWrapper(async (event: IEvent) => {
@@ -43,11 +52,40 @@ export default {
     }),
 
     addSlide: controllerWrapper(async (event: IEvent) => {
-        const { presentationId, text, optionList } = event.body
-        const modifiedPresentation = await presentationService.addSlide(presentationId, {
-            text,
-            optionList,
-        } as Slide)
+        const { presentationId, type, data } = event.body
+        let newSlide: Slide
+        if (!type) {
+            throw PRESENTATION_ERROR_CODE.MISSING_SLIDE_TYPE
+        }
+        switch (type) {
+            case SlideType.MULTIPLE_CHOICE:
+                const { text, optionList } = data
+                newSlide = {
+                    type: SlideType.MULTIPLE_CHOICE,
+                    text,
+                    optionList,
+                } as IMultipleChoiceSlide
+                break
+            case SlideType.HEADING:
+                const { heading, subHeading } = data
+                newSlide = {
+                    type: SlideType.HEADING,
+                    heading: heading,
+                    subHeading,
+                } as IHeadingSlide
+                break
+            case SlideType.PARAGRAPH:
+                const { headingValue, paragraph } = data
+                newSlide = {
+                    type: SlideType.PARAGRAPH,
+                    heading: headingValue,
+                    paragraph,
+                } as IParagraphSlide
+                break
+            default:
+                throw PRESENTATION_ERROR_CODE.NOT_SUPPORTED_SLIDE_TYPE
+        }
+        const modifiedPresentation = await presentationService.addSlide(presentationId, newSlide)
         return mapToSlideListResponse(modifiedPresentation)
     }),
 
@@ -65,11 +103,47 @@ export default {
 
     editSlideById: controllerWrapper(async (event: IEvent) => {
         const slideId = event.params.slideId
-        const { presentationId, text, optionList } = event.body
-        const modifiedPresentation = await presentationService.editSlide(presentationId, slideId, {
-            text,
-            optionList,
-        } as Slide)
+        const { presentationId, type, data } = event.body
+        if (!type) {
+            throw PRESENTATION_ERROR_CODE.MISSING_SLIDE_TYPE
+        }
+        let updatedSlide: Slide
+        switch (type) {
+            case SlideType.MULTIPLE_CHOICE: {
+                const { text, optionList } = data
+                updatedSlide = {
+                    type: SlideType.MULTIPLE_CHOICE,
+                    text,
+                    optionList,
+                } as IMultipleChoiceSlide
+                break
+            }
+            case SlideType.HEADING: {
+                const { heading, subHeading } = data
+                updatedSlide = {
+                    type: SlideType.HEADING,
+                    heading: heading,
+                    subHeading,
+                } as IHeadingSlide
+                break
+            }
+            case SlideType.PARAGRAPH: {
+                const { heading, paragraph } = data
+                updatedSlide = {
+                    type: SlideType.PARAGRAPH,
+                    heading,
+                    paragraph,
+                } as IParagraphSlide
+                break
+            }
+            default:
+                throw PRESENTATION_ERROR_CODE.NOT_SUPPORTED_SLIDE_TYPE
+        }
+        const modifiedPresentation = await presentationService.editSlide(
+            presentationId,
+            slideId,
+            updatedSlide,
+        )
         return mapToSlideListResponse(modifiedPresentation)
     }),
     updateAnswer: controllerWrapper(async (event: IEvent) => {
