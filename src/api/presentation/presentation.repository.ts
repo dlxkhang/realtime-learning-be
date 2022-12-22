@@ -1,6 +1,5 @@
 import { FilterQuery, QueryOptions, UpdateQuery, PipelineStage, AggregateOptions } from 'mongoose'
-import { PRESENTATION_ERROR_CODE } from '../../common/error-code'
-import { Presentation, Slide } from '../../interfaces/presentation/presentation.interface'
+import { Presentation } from '../../interfaces/presentation/presentation.interface'
 import presentationModel from './presentation.model'
 
 class PresentationRepository {

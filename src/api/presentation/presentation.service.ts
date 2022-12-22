@@ -1,5 +1,13 @@
+import { SlideType } from '../../enums'
 import { PRESENTATION_ERROR_CODE } from '../../common/error-code'
-import { Option, Presentation, Slide } from '../../interfaces/presentation/presentation.interface'
+import {
+    IHeadingSlide,
+    IMultipleChoiceSlide,
+    IParagraphSlide,
+    Option,
+    Presentation,
+    Slide,
+} from '../../interfaces/presentation/presentation.interface'
 import presentationRepository from './presentation.repository'
 import { Error, PipelineStage } from 'mongoose'
 import * as crypto from 'crypto-js'
@@ -163,6 +171,7 @@ class PresentationService {
                 _id: slideId,
                 ...newSlideInfo,
             }
+            console.log('newSlide', newSlide)
             presentation.slideList[modifiedSlideIdx] = newSlide
 
             const modifiedPresentation = await this.repository.editById(
@@ -186,8 +195,13 @@ class PresentationService {
         if (!slide) {
             throw PRESENTATION_ERROR_CODE.SLIDE_NOT_FOUND
         }
-
-        const option: Option = slide.optionList.find((option) => option._id.toString() === optionId)
+        if (slide.type != SlideType.MULTIPLE_CHOICE) {
+            throw PRESENTATION_ERROR_CODE.INVALID_SLIDE_TYPE
+        }
+        const multipleChoiceSlide = slide as IMultipleChoiceSlide
+        const option: Option = multipleChoiceSlide.optionList.find(
+            (option) => option._id.toString() === optionId,
+        )
         if (!option) {
             throw PRESENTATION_ERROR_CODE.OPTION_NOT_FOUND
         }
