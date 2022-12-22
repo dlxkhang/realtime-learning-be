@@ -315,8 +315,8 @@ class PresentationService {
             const { page, pageSize } = options
             const skipPipe: PipelineStage = page &&
                 pageSize && {
-                    $skip: (parseInt(page) - 1) * parseInt(pageSize),
-                }
+                $skip: (parseInt(page) - 1) * parseInt(pageSize),
+            }
             const limitPipe: PipelineStage = pageSize && {
                 $limit: parseInt(pageSize),
             }
@@ -369,7 +369,7 @@ class PresentationService {
     async getCollaborators(
         presentationId: string,
 
-        options: { skip?: number; limit?: number } = {},
+        options: { limit?: number; skip?: number } = {},
     ): Promise<IUser[]> {
         try {
             if (!presentationId) {
@@ -384,7 +384,8 @@ class PresentationService {
                             path: 'collaborators',
                             select: 'fullName avatar email',
                             options: {
-                                ...options,
+                                limit: options.limit,
+                                skipL: options.skip
                             },
                         },
                     ],
@@ -395,7 +396,8 @@ class PresentationService {
             }
 
             if (!presentation.collaborators) return []
-            return presentation.collaborators
+            const owner: IUser = presentation.createBy as IUser
+            return [owner, ...presentation.collaborators]
         } catch (e) {
             if (e instanceof Error.CastError) {
                 throw PRESENTATION_ERROR_CODE.PRESENTATION_INVALID_ID
