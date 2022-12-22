@@ -37,6 +37,7 @@ class RoleImpl {
                 break
             case Role.MEMBER:
                 this.member.role.permission = [Privilege.INVITING]
+                this.member.role.permission = [Privilege.PRESENTING]
                 break
             case Role.GUEST:
                 this.member.role.permission = []

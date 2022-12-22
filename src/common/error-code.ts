@@ -73,6 +73,10 @@ export const GROUP_ERROR_CODE = {
         statusCode: 400,
         message: 'Not having permission',
     },
+    ALREADY_HAS_PRESENTING_SLIDE: {
+        statusCode: 400,
+        message: 'Already has presenting slide',
+    },
 }
 
 export const INVITATION_ERROR_CODE = {

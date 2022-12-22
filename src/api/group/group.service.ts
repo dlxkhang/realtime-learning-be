@@ -191,5 +191,18 @@ class GroupService {
         }
         return group.members.includes(memberId)
     }
+    async updatePresentation(groupId: string, presentationId: string): Promise<IGroupDTO> {
+        const group: IGroupDTO = await this.repository.getGroupById(groupId)
+        if (!group) {
+            throw GROUP_ERROR_CODE.GROUP_NOT_FOUND
+        }
+
+        if (group.presenting) {
+            throw GROUP_ERROR_CODE.ALREADY_HAS_PRESENTING_SLIDE
+        } else {
+            group.presenting = presentationId
+        }
+        return await this.repository.updateById(groupId, group)
+    }
 }
 export default new GroupService()

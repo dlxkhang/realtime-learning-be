@@ -1,5 +1,6 @@
+import { RoleImpl } from '../../implementation'
 import controllerWrapper from '../../core/controllerWrapper'
-import { SlideType } from '../../enums'
+import { Access, Privilege, SlideType } from '../../enums'
 import { IEvent } from '../../interfaces'
 import { IMessage } from '../../interfaces/message/message.interface'
 import {
@@ -9,7 +10,8 @@ import {
     Presentation,
     Slide,
 } from '../../interfaces/presentation/presentation.interface'
-import { PRESENTATION_ERROR_CODE } from './../../common/error-code'
+import groupService from '../group/group.service'
+import { GROUP_ERROR_CODE, PRESENTATION_ERROR_CODE } from './../../common/error-code'
 import { mapToPresentationResponse, mapToSlideListResponse, mapToSlideResponse } from './mapper'
 import presentationService from './presentation.service'
 
@@ -144,7 +146,20 @@ export default {
     }),
 
     updatePresentStatus: controllerWrapper(async (event: IEvent) => {
-        const { presentationId, slideId, isPresenting } = event.body
+        const { presentationId, slideId, isPresenting, access, presentTo } = event.body
+        const user = event.user
+        if (access === Access.ONLY_GROUP) {
+            const groupIds: string[] = presentTo
+            for (let i = 0; i < groupIds.length; i++) {
+                const groupId = groupIds[i]
+                const role = await groupService.roleOf(user, groupId)
+                const userRole = new RoleImpl(user, role)
+                if (!userRole.hasPermission(Privilege.PRESENTING)) {
+                    throw GROUP_ERROR_CODE.NOT_HAVING_PERMISSION
+                }
+                groupService.updatePresentation(groupId, presentationId)
+            }
+        }
         const slide = await presentationService.updatePresentStatus(
             presentationId,
             slideId,
