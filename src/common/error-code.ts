@@ -167,6 +167,18 @@ export const PRESENTATION_ERROR_CODE = {
         statusCode: 404,
         message: 'Collaborator not found',
     },
+    MISSING_SLIDE_TYPE: {
+        statusCode: 404,
+        message: 'Missing slide type',
+    },
+    NOT_SUPPORTED_SLIDE_TYPE: {
+        statusCode: 404,
+        message: 'Not supported this slide type',
+    },
+    INVALID_SLIDE_TYPE: {
+        statusCode: 400,
+        message: 'Invalid slide type',
+    },
 }
 export const GENERAL_ERROR_CODE = {
     UNKNOWN_ERROR: {

@@ -1,4 +1,5 @@
 import { Types } from 'mongoose'
+import { SlideType } from '../../enums'
 import { IMessage } from '../message/message.interface'
 import { IUser } from '../user'
 interface Option {
@@ -7,9 +8,21 @@ interface Option {
     votes: number
 }
 interface Slide {
-    _id: string
+    _id?: string
+    type: SlideType
+}
+interface IMultipleChoiceSlide extends Slide {
     text: string
     optionList: Option[]
+}
+interface IHeadingSlide extends Slide {
+    heading: string
+    subHeading: string
+}
+
+interface IParagraphSlide extends Slide {
+    heading: string
+    paragraph: string
 }
 
 interface Presentation {
@@ -39,8 +52,20 @@ interface PresentationResponse {
 
 interface SlideResponse {
     id: string
-    text?: string
-    optionList?: OptionResponse[]
+    type: string
+}
+interface IMultipleChoiceSlideResponse extends SlideResponse {
+    text: string
+    optionList: OptionResponse[]
+}
+interface IHeadingSlideResponse extends SlideResponse {
+    heading: string
+    subHeading: string
+}
+
+interface IParagraphSlideResponse extends SlideResponse {
+    heading: string
+    paragraph: string
 }
 
 interface OptionResponse {
@@ -49,4 +74,17 @@ interface OptionResponse {
     votes: Number
 }
 
-export { Option, Slide, Presentation, PresentationResponse, SlideResponse, OptionResponse }
+export {
+    Option,
+    Slide,
+    Presentation,
+    IHeadingSlide,
+    IParagraphSlide,
+    IMultipleChoiceSlide,
+    PresentationResponse,
+    SlideResponse,
+    IMultipleChoiceSlideResponse,
+    IHeadingSlideResponse,
+    IParagraphSlideResponse,
+    OptionResponse,
+}
