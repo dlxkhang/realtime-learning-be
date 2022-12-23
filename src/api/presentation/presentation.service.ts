@@ -468,7 +468,11 @@ class PresentationService {
         }
     }
 
-    async removeCollaborator(presentationId: string, collaboratorId: string): Promise<IUser[]> {
+    async removeCollaborator(
+        userId: string,
+        presentationId: string,
+        collaboratorId: string,
+    ): Promise<IUser[]> {
         try {
             if (!presentationId) {
                 throw PRESENTATION_ERROR_CODE.PRESENTATION_MISSING_ID
@@ -487,9 +491,11 @@ class PresentationService {
             if (!presentation) {
                 throw PRESENTATION_ERROR_CODE.PRESENTATION_NOT_FOUND
             }
+            const owner: IUser = presentation.createBy as IUser
+            if (userId !== owner._id.toString()) throw PRESENTATION_ERROR_CODE.INVALID_OWNER
             if (
                 presentation.collaborators &&
-                !presentation.collaborators.find((item) => item._id === collaboratorId)
+                !presentation.collaborators.find((item) => item._id.toString() === collaboratorId)
             )
                 throw PRESENTATION_ERROR_CODE.COLLABORATOR_NOT_FOUND
 
@@ -498,7 +504,7 @@ class PresentationService {
                     _id: presentationId,
                 },
                 {
-                    $pop: {
+                    $pull: {
                         collaborators: collaboratorId,
                     },
                 },

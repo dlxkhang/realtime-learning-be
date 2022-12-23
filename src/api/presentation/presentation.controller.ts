@@ -199,7 +199,9 @@ export default {
 
     removeCollaborator: controllerWrapper(async (event: IEvent) => {
         const { presentationId, collaboratorId } = event.params
+        const userId = event.user._id.toString()
         const collaborators = await presentationService.removeCollaborator(
+            userId,
             presentationId,
             collaboratorId,
         )

@@ -179,6 +179,10 @@ export const PRESENTATION_ERROR_CODE = {
         statusCode: 400,
         message: 'Invalid slide type',
     },
+    INVALID_OWNER: {
+        statusCode: 401,
+        message: 'Invalid owner',
+    },
 }
 export const GENERAL_ERROR_CODE = {
     UNKNOWN_ERROR: {
