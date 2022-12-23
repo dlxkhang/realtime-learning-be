@@ -60,4 +60,7 @@ router.post(
     presentationController.addAuthenticatedMessage,
 )
 router.get('/chat/messages/:presentationCode', presentationController.getMessages)
+
+router.post('/qna/add-anonymous-question', presentationController.addAnonymousQnAQuestion)
+router.get('/qna/get-question-list/:presentationCode', presentationController.getQnaQuestionList)
 export default router

@@ -12,6 +12,13 @@ const Slide = new Schema<Slide>({
     text: { type: String },
     optionList: [{ type: Option }],
 })
+const QnAQuestion = new Schema({
+    question: { type: String, required: true },
+    likeCount: { type: Number, default: 0 },
+    isAnswered: { type: Boolean, default: false },
+    date: { type: Date, default: Date.now },
+})
+
 const Presentation = new Schema<Presentation>({
     name: { type: String },
     description: { type: String },
@@ -21,6 +28,7 @@ const Presentation = new Schema<Presentation>({
     inviteCode: { type: String },
     slideList: [{ type: Slide }],
     messages: [{ type: Schema.Types.Mixed }],
+    qnaQuestionList: [{ type: QnAQuestion }],
 })
 
 export default mongoose.model('Presentations', Presentation)

@@ -2,7 +2,12 @@ import { IEvent } from '../../interfaces'
 import controllerWrapper from '../../core/controllerWrapper'
 import presentationRepository from './presentation.repository'
 import presentationService from './presentation.service'
-import { Option, Presentation, Slide } from '../../interfaces/presentation/presentation.interface'
+import {
+    Option,
+    Presentation,
+    QnAQuestion,
+    Slide,
+} from '../../interfaces/presentation/presentation.interface'
 import { mapToPresentationResponse, mapToSlideResponse, mapToSlideListResponse } from './mapper'
 import { IMessage } from '../../interfaces/message/message.interface'
 
@@ -134,5 +139,36 @@ export default {
         const { page, pageSize } = event.query
         const messages = await presentationService.getMessages(presentationCode, { page, pageSize })
         return messages
+    }),
+
+    addAnonymousQnAQuestion: controllerWrapper(async (event: IEvent) => {
+        const { presentationCode, qnaQuestion } = event.body
+        const anonymousQuestion: QnAQuestion = {
+            question: qnaQuestion.question,
+            date: new Date(),
+            isAnswered: false,
+            likeCount: 0,
+        }
+        const questions = await presentationService.addQnAQuestion(
+            presentationCode,
+            anonymousQuestion,
+        )
+        return questions
+    }),
+
+    getQnaQuestionList: controllerWrapper(async (event: IEvent) => {
+        const { presentationCode } = event.params
+        const { page, pageSize } = event.query
+        const questions = await presentationService.getQnAQuesionList(presentationCode, {
+            page,
+            pageSize,
+        })
+        return questions
+    }),
+
+    updateQnAQuestionLikeCount: controllerWrapper(async (event: IEvent) => {
+        const { presentationCode, qnaQuestion } = event.body
+        const questions = await presentationService.updateQnAQuestion(presentationCode, qnaQuestion)
+        return questions
     }),
 }

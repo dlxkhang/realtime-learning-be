@@ -19,7 +19,7 @@ class PresentationRepository {
         presentationId: string,
         EditedPresentation: Presentation,
     ): Promise<Presentation> {
-        return await presentationModel
+        return presentationModel
             .findByIdAndUpdate(presentationId, EditedPresentation, {
                 new: true,
             })
@@ -31,7 +31,7 @@ class PresentationRepository {
     }
 
     async getPresentationById(presentationId: string): Promise<Presentation> {
-        return await presentationModel.findById(
+        return presentationModel.findById(
             presentationId,
             {},
             {
@@ -47,7 +47,7 @@ class PresentationRepository {
     }
 
     async getPresentationByCode(code: string): Promise<Presentation> {
-        return await presentationModel.findOne(
+        return presentationModel.findOne(
             { inviteCode: code },
             {},
             {
@@ -63,7 +63,7 @@ class PresentationRepository {
     }
 
     async deleteById(presentationId: string): Promise<Presentation> {
-        return await presentationModel
+        return presentationModel
             .findByIdAndDelete(presentationId)
             .populate({
                 path: 'createBy',
@@ -74,7 +74,7 @@ class PresentationRepository {
 
     //get list of presentation by user id
     async getPresentationListByUserId(userId: string): Promise<Presentation[]> {
-        return await presentationModel.find(
+        return presentationModel.find(
             {
                 createBy: userId,
             },
@@ -96,7 +96,7 @@ class PresentationRepository {
         currentSlide: number,
         isPresenting: boolean,
     ): Promise<Presentation> {
-        return await presentationModel
+        return presentationModel
             .findByIdAndUpdate(
                 presentationId,
                 {
@@ -119,7 +119,7 @@ class PresentationRepository {
         update: UpdateQuery<any>,
         options?: QueryOptions<any>,
     ): Promise<Presentation> {
-        return await presentationModel.findOneAndUpdate(filter, update, {
+        return presentationModel.findOneAndUpdate(filter, update, {
             new: true,
             lean: true,
             populate: [
@@ -131,11 +131,12 @@ class PresentationRepository {
             ...options,
         })
     }
+
     async aggregate(
         pipeline: PipelineStage[],
         options: AggregateOptions = {},
     ): Promise<Presentation[]> {
-        return await presentationModel.aggregate(pipeline, options)
+        return presentationModel.aggregate(pipeline, options)
     }
 }
 

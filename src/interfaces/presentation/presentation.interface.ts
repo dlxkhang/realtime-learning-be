@@ -22,6 +22,7 @@ interface Presentation {
     inviteCode: string
     slideList?: Slide[]
     messages?: IMessage[]
+    qnaQuestionList?: QnAQuestion[]
 }
 
 interface PresentationResponse {
@@ -47,4 +48,19 @@ interface OptionResponse {
     votes: Number
 }
 
-export { Option, Slide, Presentation, PresentationResponse, SlideResponse, OptionResponse }
+interface QnAQuestion {
+    id?: string
+    question: string
+    likeCount: number
+    isAnswered: boolean
+    date: Date
+}
+export {
+    Option,
+    Slide,
+    Presentation,
+    PresentationResponse,
+    SlideResponse,
+    OptionResponse,
+    QnAQuestion,
+}
