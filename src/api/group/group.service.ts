@@ -2,7 +2,7 @@ import { IUser } from './../../interfaces/user/user.interface'
 import { GROUP_ERROR_CODE } from '../../common/error-code'
 import { IGroupDTO } from '../../interfaces'
 import GroupRepository from './group.repository'
-import { Role } from '../../enums'
+import { Privilege, Role } from '../../enums'
 class GroupService {
     private repository: GroupRepository
 
@@ -191,7 +191,7 @@ class GroupService {
         }
         return group.members.includes(memberId)
     }
-    async updatePresentation(groupId: string, presentationId: string): Promise<IGroupDTO> {
+    async startPresenting(groupId: string, presentationId: string): Promise<IGroupDTO> {
         const group: IGroupDTO = await this.repository.getGroupById(groupId)
         if (!group) {
             throw GROUP_ERROR_CODE.GROUP_NOT_FOUND
@@ -203,6 +203,15 @@ class GroupService {
             group.presenting = presentationId
         }
         return await this.repository.updateById(groupId, group)
+    }
+    async stopPresentingForGroups(presentationId: string) {
+        const groups: IGroupDTO[] = await this.repository.find({
+            presenting: presentationId,
+        })
+        for (const group of groups) {
+            group.presenting = undefined
+            await this.repository.updateById(group._id, group)
+        }
     }
 }
 export default new GroupService()

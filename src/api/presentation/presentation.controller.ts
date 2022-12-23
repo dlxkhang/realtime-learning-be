@@ -148,16 +148,20 @@ export default {
     updatePresentStatus: controllerWrapper(async (event: IEvent) => {
         const { presentationId, slideId, isPresenting, access, presentTo } = event.body
         const user = event.user
-        if (access === Access.ONLY_GROUP) {
-            const groupIds: string[] = presentTo
-            for (let i = 0; i < groupIds.length; i++) {
-                const groupId = groupIds[i]
-                const role = await groupService.roleOf(user, groupId)
-                const userRole = new RoleImpl(user, role)
-                if (!userRole.hasPermission(Privilege.PRESENTING)) {
-                    throw GROUP_ERROR_CODE.NOT_HAVING_PERMISSION
+        if (!isPresenting) {
+            await groupService.stopPresentingForGroups(presentationId)
+        } else {
+            if (access === Access.ONLY_GROUP) {
+                const groupIds: string[] = presentTo
+                for (let i = 0; i < groupIds.length; i++) {
+                    const groupId = groupIds[i]
+                    const role = await groupService.roleOf(user, groupId)
+                    const userRole = new RoleImpl(user, role)
+                    if (!userRole.hasPermission(Privilege.PRESENTING)) {
+                        throw GROUP_ERROR_CODE.NOT_HAVING_PERMISSION
+                    }
+                    await groupService.startPresenting(groupId, presentationId)
                 }
-                groupService.updatePresentation(groupId, presentationId)
             }
         }
         const slide = await presentationService.updatePresentStatus(
