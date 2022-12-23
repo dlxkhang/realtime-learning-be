@@ -172,7 +172,7 @@ class PresentationService {
                 _id: slideId,
                 ...newSlideInfo,
             }
-            console.log('newSlide', newSlide)
+
             presentation.slideList[modifiedSlideIdx] = newSlide
 
             const modifiedPresentation = await this.repository.editById(
@@ -329,8 +329,8 @@ class PresentationService {
             const { page, pageSize } = options
             const skipPipe: PipelineStage = page &&
                 pageSize && {
-                $skip: (parseInt(page) - 1) * parseInt(pageSize),
-            }
+                    $skip: (parseInt(page) - 1) * parseInt(pageSize),
+                }
             const limitPipe: PipelineStage = pageSize && {
                 $limit: parseInt(pageSize),
             }
@@ -389,6 +389,9 @@ class PresentationService {
             if (!presentationId) {
                 throw PRESENTATION_ERROR_CODE.PRESENTATION_MISSING_ID
             }
+            const parsedLimit = parseInt(options.limit.toString())
+            const parsedSkip = parseInt(options.skip.toString())
+
             const presentation = await this.repository.findById(
                 presentationId,
                 {},
@@ -398,13 +401,17 @@ class PresentationService {
                             path: 'collaborators',
                             select: 'fullName avatar email',
                             options: {
-                                limit: options.limit,
-                                skipL: options.skip
+                                skip: parsedSkip,
+                                limit: parsedLimit,
                             },
                         },
                     ],
                 },
             )
+            console.log({
+                limit: parsedLimit,
+                skip: parsedSkip,
+            })
             if (!presentation) {
                 throw PRESENTATION_ERROR_CODE.PRESENTATION_NOT_FOUND
             }

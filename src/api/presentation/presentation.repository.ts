@@ -154,6 +154,7 @@ class PresentationRepository {
         return await presentationModel.findById(id, projection, {
             new: true,
             lean: true,
+            ...otherOptions,
             populate: [
                 {
                     path: 'createBy',
@@ -161,7 +162,6 @@ class PresentationRepository {
                 },
                 ...(populate as any),
             ],
-            ...otherOptions,
         })
     }
 
