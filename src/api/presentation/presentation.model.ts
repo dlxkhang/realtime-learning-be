@@ -25,6 +25,7 @@ const Presentation = new Schema<Presentation>({
     inviteCode: { type: String },
     slideList: [{ type: Slide }],
     messages: [{ type: Schema.Types.Mixed }],
+    collaborators: [{ type: Schema.Types.ObjectId, default: [], ref: 'User' }],
 })
 
 export default mongoose.model('Presentations', Presentation)

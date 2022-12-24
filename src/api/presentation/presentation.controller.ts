@@ -1,7 +1,8 @@
+import { IEvent, IUser } from '../../interfaces'
 import controllerWrapper from '../../core/controllerWrapper'
 import { SlideType } from '../../enums'
-import { IEvent } from '../../interfaces'
 import { IMessage } from '../../interfaces/message/message.interface'
+import { mapTo as userMapper } from '../user/mapper'
 import {
     IHeadingSlide,
     IMultipleChoiceSlide,
@@ -184,5 +185,26 @@ export default {
         const { page, pageSize } = event.query
         const messages = await presentationService.getMessages(presentationCode, { page, pageSize })
         return messages
+    }),
+
+    getCollaborators: controllerWrapper(async (event: IEvent) => {
+        const { presentationId } = event.params
+        const { skip, limit } = event.query
+        const collaborators = await presentationService.getCollaborators(presentationId, {
+            skip,
+            limit,
+        })
+        return collaborators.map((collaborator) => userMapper(collaborator))
+    }),
+
+    removeCollaborator: controllerWrapper(async (event: IEvent) => {
+        const { presentationId, collaboratorId } = event.params
+        const userId = event.user._id.toString()
+        const collaborators = await presentationService.removeCollaborator(
+            userId,
+            presentationId,
+            collaboratorId,
+        )
+        return collaborators.map((collaborator) => userMapper(collaborator))
     }),
 }
