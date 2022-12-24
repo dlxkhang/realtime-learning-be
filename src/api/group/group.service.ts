@@ -196,7 +196,6 @@ class GroupService {
         if (!group) {
             throw GROUP_ERROR_CODE.GROUP_NOT_FOUND
         }
-
         if (group.presenting) {
             throw GROUP_ERROR_CODE.ALREADY_HAS_PRESENTING_SLIDE
         } else {
@@ -208,6 +207,8 @@ class GroupService {
         const groups: IGroupDTO[] = await this.repository.find({
             presenting: presentationId,
         })
+        console.log('groups', groups)
+        if (!groups || groups.length === 0) return
         for (const group of groups) {
             group.presenting = undefined
             await this.repository.updateById(group._id, group)

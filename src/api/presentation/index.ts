@@ -51,7 +51,11 @@ router.get(
     presentationController.getPresentationListByUserId,
 )
 
-router.post('/slide/update-present-status', presentationController.updatePresentStatus)
+router.post(
+    '/slide/update-present-status',
+    passport.authenticate('jwt', { session: false }),
+    presentationController.updatePresentStatus,
+)
 
 router.post('/chat/add-anonymous-message', presentationController.addAnonymousMessage)
 router.post(

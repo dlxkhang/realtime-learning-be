@@ -149,17 +149,23 @@ export default {
         const { presentationId, slideId, isPresenting, access, presentTo } = event.body
         const user = event.user
         if (!isPresenting) {
+            // stop presenting
             await groupService.stopPresentingForGroups(presentationId)
         } else {
+            // start presenting
             if (access === Access.ONLY_GROUP) {
+                console.log('Start presenting', access, presentTo)
                 const groupIds: string[] = presentTo
                 for (let i = 0; i < groupIds.length; i++) {
                     const groupId = groupIds[i]
+                    console.log('user', user)
                     const role = await groupService.roleOf(user, groupId)
+                    console.log('role', role)
                     const userRole = new RoleImpl(user, role)
                     if (!userRole.hasPermission(Privilege.PRESENTING)) {
                         throw GROUP_ERROR_CODE.NOT_HAVING_PERMISSION
                     }
+                    console.log('Has permission')
                     await groupService.startPresenting(groupId, presentationId)
                 }
             }
