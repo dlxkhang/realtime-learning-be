@@ -110,7 +110,11 @@ export const INVITATION_ERROR_CODE = {
     },
     INVITEE_DUPLICATED: {
         statusCode: 400,
-        message: 'Invitee already a member of this group',
+        message: 'Duplicated invitee',
+    },
+    PRESENTATION_ID_NOT_FOUND: {
+        statusCode: 400,
+        message: 'Invalid presentation ID',
     },
 }
 export const PRESENTATION_ERROR_CODE = {
@@ -159,6 +163,14 @@ export const PRESENTATION_ERROR_CODE = {
         statusCode: 400,
         message: 'Slide is not presenting',
     },
+    DUPLICATE_COLLABORATOR: {
+        statusCode: 400,
+        message: 'Collaborator is duplicated',
+    },
+    COLLABORATOR_NOT_FOUND: {
+        statusCode: 404,
+        message: 'Collaborator not found',
+    },
     MISSING_SLIDE_TYPE: {
         statusCode: 404,
         message: 'Missing slide type',
@@ -170,6 +182,10 @@ export const PRESENTATION_ERROR_CODE = {
     INVALID_SLIDE_TYPE: {
         statusCode: 400,
         message: 'Invalid slide type',
+    },
+    INVALID_OWNER: {
+        statusCode: 401,
+        message: 'Invalid owner',
     },
 }
 export const GENERAL_ERROR_CODE = {

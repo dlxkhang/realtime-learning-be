@@ -64,4 +64,16 @@ router.post(
     presentationController.addAuthenticatedMessage,
 )
 router.get('/chat/messages/:presentationCode', presentationController.getMessages)
+
+router.get(
+    '/collaborators/:presentationId',
+    passport.authenticate('jwt', { session: false }),
+    presentationController.getCollaborators,
+)
+
+router.delete(
+    '/delete/collaborator/:presentationId&:collaboratorId',
+    passport.authenticate('jwt', { session: false }),
+    presentationController.removeCollaborator,
+)
 export default router

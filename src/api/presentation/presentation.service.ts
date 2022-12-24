@@ -15,6 +15,7 @@ import userModel from '../user/model/user.model'
 import socketService from '../socket/socket.service'
 import { ChatEvent, PresentationEvent } from '../socket/event'
 import { IMessage } from '../../interfaces/message/message.interface'
+import { IUser } from '../../interfaces'
 
 class PresentationService {
     private repository: typeof presentationRepository
@@ -171,7 +172,7 @@ class PresentationService {
                 _id: slideId,
                 ...newSlideInfo,
             }
-            console.log('newSlide', newSlide)
+
             presentation.slideList[modifiedSlideIdx] = newSlide
 
             const modifiedPresentation = await this.repository.editById(
@@ -367,11 +368,176 @@ class PresentationService {
                     },
                 },
             })
-            console.log('pipeline', JSON.stringify(pipeline))
+
             const presentations = await this.repository.aggregate(pipeline)
-            console.log('Presentations', presentations)
+
             const messages = presentations?.[0]?.messages ?? []
             return messages
+        } catch (e) {
+            if (e instanceof Error.CastError) {
+                throw PRESENTATION_ERROR_CODE.PRESENTATION_INVALID_ID
+            } else throw e
+        }
+    }
+
+    async getCollaborators(
+        presentationId: string,
+
+        options: { limit?: number; skip?: number } = {},
+    ): Promise<IUser[]> {
+        try {
+            if (!presentationId) {
+                throw PRESENTATION_ERROR_CODE.PRESENTATION_MISSING_ID
+            }
+            const parsedLimit = parseInt(options.limit.toString())
+            const parsedSkip = parseInt(options.skip.toString())
+
+            const presentation = await this.repository.findById(
+                presentationId,
+                {},
+                {
+                    populate: [
+                        {
+                            path: 'collaborators',
+                            select: 'fullName avatar email',
+                            options: {
+                                skip: parsedSkip,
+                                limit: parsedLimit,
+                            },
+                        },
+                    ],
+                },
+            )
+            console.log({
+                limit: parsedLimit,
+                skip: parsedSkip,
+            })
+            if (!presentation) {
+                throw PRESENTATION_ERROR_CODE.PRESENTATION_NOT_FOUND
+            }
+
+            if (!presentation.collaborators) return []
+            const owner: IUser = presentation.createBy as IUser
+            return [owner, ...presentation.collaborators]
+        } catch (e) {
+            if (e instanceof Error.CastError) {
+                throw PRESENTATION_ERROR_CODE.PRESENTATION_INVALID_ID
+            } else throw e
+        }
+    }
+
+    async addCollaborator(presentationId: string, collaboratorId: string): Promise<Presentation> {
+        try {
+            if (!presentationId) {
+                throw PRESENTATION_ERROR_CODE.PRESENTATION_MISSING_ID
+            }
+            const presentation = await this.repository.findById(
+                presentationId,
+                {},
+                {
+                    populate: [
+                        {
+                            path: 'collaborators',
+                        },
+                    ],
+                },
+            )
+            if (!presentation) {
+                throw PRESENTATION_ERROR_CODE.PRESENTATION_NOT_FOUND
+            }
+            if (
+                presentation.collaborators &&
+                presentation.collaborators.find((item) => item._id === collaboratorId)
+            )
+                throw PRESENTATION_ERROR_CODE.DUPLICATE_COLLABORATOR
+
+            return await this.repository.findOneAndUpdate(
+                {
+                    _id: presentationId,
+                },
+                {
+                    $push: {
+                        collaborators: collaboratorId,
+                    },
+                },
+            )
+        } catch (e) {
+            if (e instanceof Error.CastError) {
+                throw PRESENTATION_ERROR_CODE.PRESENTATION_INVALID_ID
+            } else throw e
+        }
+    }
+
+    async removeCollaborator(
+        userId: string,
+        presentationId: string,
+        collaboratorId: string,
+    ): Promise<IUser[]> {
+        try {
+            if (!presentationId) {
+                throw PRESENTATION_ERROR_CODE.PRESENTATION_MISSING_ID
+            }
+            const presentation = await this.repository.findById(
+                presentationId,
+                {},
+                {
+                    populate: [
+                        {
+                            path: 'collaborators',
+                        },
+                    ],
+                },
+            )
+            if (!presentation) {
+                throw PRESENTATION_ERROR_CODE.PRESENTATION_NOT_FOUND
+            }
+            const owner: IUser = presentation.createBy as IUser
+            if (userId !== owner._id.toString()) throw PRESENTATION_ERROR_CODE.INVALID_OWNER
+            if (
+                presentation.collaborators &&
+                !presentation.collaborators.find((item) => item._id.toString() === collaboratorId)
+            )
+                throw PRESENTATION_ERROR_CODE.COLLABORATOR_NOT_FOUND
+
+            const updatedPresentation = await this.repository.findOneAndUpdate(
+                {
+                    _id: presentationId,
+                },
+                {
+                    $pull: {
+                        collaborators: collaboratorId,
+                    },
+                },
+            )
+            return updatedPresentation.collaborators
+        } catch (e) {
+            if (e instanceof Error.CastError) {
+                throw PRESENTATION_ERROR_CODE.PRESENTATION_INVALID_ID
+            } else throw e
+        }
+    }
+
+    async getCollaboratedPresentations(userId: string): Promise<IUser[]> {
+        try {
+            const presentation = await this.repository.findOne(
+                {
+                    collaborators: userId,
+                },
+                {},
+                {
+                    populate: [
+                        {
+                            path: 'collaborators',
+                            select: 'fullName avatar email',
+                        },
+                    ],
+                },
+            )
+            if (!presentation) {
+                throw PRESENTATION_ERROR_CODE.PRESENTATION_NOT_FOUND
+            }
+
+            return presentation.collaborators
         } catch (e) {
             if (e instanceof Error.CastError) {
                 throw PRESENTATION_ERROR_CODE.PRESENTATION_INVALID_ID

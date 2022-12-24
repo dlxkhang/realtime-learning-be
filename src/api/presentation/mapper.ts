@@ -24,6 +24,10 @@ const mapToPresentationResponse = (presentation: Presentation): PresentationResp
         transformedCreateBy = userMapper(presentation.createBy as any)
     }
 
+    let transformedSlideList
+    if (presentation.slideList) {
+        transformedSlideList = mapToSlideListResponse(presentation.slideList)
+    }
     return {
         id: presentation._id,
         name: presentation.name,
@@ -31,7 +35,7 @@ const mapToPresentationResponse = (presentation: Presentation): PresentationResp
         createBy: transformedCreateBy,
         isPresenting: presentation.isPresenting,
         currentSlide: presentation.currentSlide,
-        slideList: [],
+        slideList: transformedSlideList,
         inviteCode: presentation.inviteCode,
     }
 }
