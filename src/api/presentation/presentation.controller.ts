@@ -148,6 +148,14 @@ export default {
 
     updatePresentStatus: controllerWrapper(async (event: IEvent) => {
         const { presentationId, slideId, isPresenting, access, presentTo } = event.body
+        const presentation = await presentationService.getById(presentationId)
+        if (!presentation) {
+            throw PRESENTATION_ERROR_CODE.PRESENTATION_NOT_FOUND
+        }
+        const slideMatch = presentation.slideList.find((slide) => slide._id.toString() === slideId)
+        if (!slideMatch) {
+            throw PRESENTATION_ERROR_CODE.SLIDE_NOT_FOUND
+        }
         const user = event.user
         if (!isPresenting) {
             // stop presenting

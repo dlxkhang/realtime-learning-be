@@ -192,6 +192,7 @@ class GroupService {
         return group.members.includes(memberId)
     }
     async startPresenting(groupId: string, presentationId: string): Promise<IGroupDTO> {
+        console.log('Start Presenting For Groups')
         const group: IGroupDTO = await this.repository.getGroupById(groupId)
         if (!group) {
             throw GROUP_ERROR_CODE.GROUP_NOT_FOUND
@@ -204,13 +205,14 @@ class GroupService {
         return await this.repository.updateById(groupId, group)
     }
     async stopPresentingForGroups(presentationId: string) {
+        console.log('Stop Presenting For Groups')
         const groups: IGroupDTO[] = await this.repository.find({
             presenting: presentationId,
         })
         console.log('groups', groups)
         if (!groups || groups.length === 0) return
         for (const group of groups) {
-            group.presenting = undefined
+            group.presenting = ''
             await this.repository.updateById(group._id, group)
         }
     }
