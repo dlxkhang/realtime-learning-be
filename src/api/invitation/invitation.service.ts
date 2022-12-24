@@ -197,9 +197,11 @@ class InvitationService {
         const collaborators = await presentationService.getCollaborators(presentationId)
 
         const owner = presentation.createBy as IUser
+        console.log('owner: ', owner);
         if (owner._id.toString() !== inviterId.toString())
-            throw INVITATION_ERROR_CODE.UNAUTHORIZED_INVITER
-
+        throw INVITATION_ERROR_CODE.UNAUTHORIZED_INVITER
+        console.log('owner:1 ', owner);
+        
         const session = await invitationModel.startSession()
         session.startTransaction()
         await Promise.all(
