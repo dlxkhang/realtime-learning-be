@@ -1,3 +1,4 @@
+import { PresentationEvent } from './../socket/event'
 import { RoleImpl } from '../../implementation'
 import { Access, Privilege, SlideType } from '../../enums'
 import { IEvent, IUser } from '../../interfaces'
@@ -15,6 +16,7 @@ import groupService from '../group/group.service'
 import { GROUP_ERROR_CODE, PRESENTATION_ERROR_CODE } from './../../common/error-code'
 import { mapToPresentationResponse, mapToSlideListResponse, mapToSlideResponse } from './mapper'
 import presentationService from './presentation.service'
+import socketService from '../socket/socket.service'
 
 export default {
     createPresentation: controllerWrapper(async (event: IEvent) => {
@@ -191,6 +193,7 @@ export default {
                     throw PRESENTATION_ERROR_CODE.NOT_HAVING_PERMISSION
                 }
                 await groupService.startPresenting(groupId, presentationId)
+                socketService.broadcastToRoom(groupId, PresentationEvent.NEW_PRESENTING_IN_GROUP)
             }
         }
         const slide = await presentationService.updatePresentStatus(

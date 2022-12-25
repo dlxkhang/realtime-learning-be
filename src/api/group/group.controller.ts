@@ -106,8 +106,11 @@ export default {
     getGroupJoined: controllerWrapper(async (event: IEvent) => {
         const user = event.user
         const userRole = new RoleImpl(user, Role.MEMBER)
-        const groups: IGroupDTO[] = await groupService.getGroupHasMember(user._id)
-        const groupsGeneral: IGroupGeneral[] = await Promise.all(groups.map(mapToGeneral))
+        const groupsHasMember: IGroupDTO[] = await groupService.getGroupHasMember(user._id)
+        const groupsCoOwner = await groupService.getGroupHasCoOwner(user._id)
+        const groupsGeneral: IGroupGeneral[] = await Promise.all(
+            groupsHasMember.concat(groupsCoOwner).map(mapToGeneral),
+        )
         return {
             groups: groupsGeneral,
             permission: userRole.getPermission(),
