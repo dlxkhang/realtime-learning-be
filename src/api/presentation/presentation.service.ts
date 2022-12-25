@@ -218,8 +218,9 @@ class PresentationService {
 
     async getPresentingSlide(presentationCode: string): Promise<Slide> {
         try {
+            console.log(presentationCode)
             const presentation = await this.repository.getPresentationByCode(presentationCode)
-
+            console.log(presentation)
             if (!presentation) {
                 throw PRESENTATION_ERROR_CODE.PRESENTATION_NOT_FOUND
             }
@@ -277,6 +278,7 @@ class PresentationService {
             )
 
             if (!updatePresentation.isPresenting) {
+                console.log('Emit end presenting', updatePresentation.inviteCode)
                 // Announce client that the presentation has stopped
                 socketService.broadcastToRoom(
                     updatePresentation.inviteCode,

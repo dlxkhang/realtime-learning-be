@@ -187,6 +187,10 @@ export const PRESENTATION_ERROR_CODE = {
         statusCode: 401,
         message: 'Invalid owner',
     },
+    MISSING_PRESENT_TO: {
+        statusCode: 400,
+        message: 'Missing group that presentation will be presented to',
+    },
 }
 export const GENERAL_ERROR_CODE = {
     UNKNOWN_ERROR: {

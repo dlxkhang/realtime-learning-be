@@ -26,6 +26,7 @@ class RoleImpl {
                     Privilege.DELETING,
                     Privilege.INVITING,
                     Privilege.PRESENTING,
+                    Privilege.VIEWING,
                 ]
                 break
             case Role.CO_ADMINISTRATOR:
@@ -35,10 +36,11 @@ class RoleImpl {
                     Privilege.REVOKING,
                     Privilege.INVITING,
                     Privilege.PRESENTING,
+                    Privilege.VIEWING,
                 ]
                 break
             case Role.MEMBER:
-                this.member.role.permission = [Privilege.INVITING]
+                this.member.role.permission = [Privilege.INVITING, Privilege.VIEWING]
                 break
             case Role.GUEST:
                 this.member.role.permission = []

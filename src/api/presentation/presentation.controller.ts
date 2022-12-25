@@ -135,7 +135,19 @@ export default {
         else return { ok: true }
     }),
     getPresentingSlide: controllerWrapper(async (event: IEvent) => {
-        const { presentationCode } = event.params
+        const { presentationCode, groupId } = event.params
+        const user = event.user
+        if (groupId && user?._id) {
+            const group = await groupService.getGroup(groupId)
+            if (!group) {
+                throw GROUP_ERROR_CODE.GROUP_NOT_FOUND
+            }
+            const role = await groupService.roleOf(user, groupId)
+            const userRole = new RoleImpl(user, role)
+            if (!userRole.hasPermission(Privilege.VIEWING)) {
+                throw PRESENTATION_ERROR_CODE.NOT_HAVING_PERMISSION
+            }
+        }
         const slide = await presentationService.getPresentingSlide(presentationCode)
         return mapToSlideResponse(slide)
     }),
@@ -147,6 +159,8 @@ export default {
     }),
 
     updatePresentStatus: controllerWrapper(async (event: IEvent) => {
+        // presentTo: groupId,
+        // access: Access
         const { presentationId, slideId, isPresenting, access, presentTo } = event.body
         const presentation = await presentationService.getById(presentationId)
         if (!presentation) {
@@ -163,20 +177,20 @@ export default {
         } else {
             // start presenting
             if (access === Access.ONLY_GROUP) {
+                if (!presentTo) throw PRESENTATION_ERROR_CODE.MISSING_PRESENT_TO
                 console.log('Start presenting', access, presentTo)
-                const groupIds: string[] = presentTo
-                for (let i = 0; i < groupIds.length; i++) {
-                    const groupId = groupIds[i]
-                    console.log('user', user)
-                    const role = await groupService.roleOf(user, groupId)
-                    console.log('role', role)
-                    const userRole = new RoleImpl(user, role)
-                    if (!userRole.hasPermission(Privilege.PRESENTING)) {
-                        throw GROUP_ERROR_CODE.NOT_HAVING_PERMISSION
-                    }
-                    console.log('Has permission')
-                    await groupService.startPresenting(groupId, presentationId)
+                const groupId = presentTo
+                const group = await groupService.getGroup(groupId)
+                if (!group) {
+                    throw GROUP_ERROR_CODE.GROUP_NOT_FOUND
                 }
+                const role = await groupService.roleOf(user, groupId)
+                console.log('role', role)
+                const userRole = new RoleImpl(user, role)
+                if (!userRole.hasPermission(Privilege.PRESENTING)) {
+                    throw PRESENTATION_ERROR_CODE.NOT_HAVING_PERMISSION
+                }
+                await groupService.startPresenting(groupId, presentationId)
             }
         }
         const slide = await presentationService.updatePresentStatus(
