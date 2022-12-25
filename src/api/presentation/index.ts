@@ -44,6 +44,11 @@ router.put(
 )
 router.post('/slide/update-answer', presentationController.updateAnswer)
 router.get('/slide/get/:presentationCode', presentationController.getPresentingSlide)
+router.get(
+    '/slide/get/:presentationCode/:groupId',
+    passport.authenticate('jwt', { session: false }),
+    presentationController.getPresentingSlide,
+)
 // get list of presentation by user id
 router.get(
     '/get-all',
@@ -51,7 +56,11 @@ router.get(
     presentationController.getPresentationListByUserId,
 )
 
-router.post('/slide/update-present-status', presentationController.updatePresentStatus)
+router.post(
+    '/slide/update-present-status',
+    passport.authenticate('jwt', { session: false }),
+    presentationController.updatePresentStatus,
+)
 
 router.post('/chat/add-anonymous-message', presentationController.addAnonymousMessage)
 router.post(

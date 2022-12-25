@@ -73,6 +73,14 @@ export const GROUP_ERROR_CODE = {
         statusCode: 400,
         message: 'Not having permission',
     },
+    ALREADY_HAS_PRESENTING_SLIDE: {
+        statusCode: 400,
+        message: 'Already has presenting slide',
+    },
+    INVALID_PRIVILEGE: {
+        statusCode: 400,
+        message: 'Invalid privilege',
+    },
 }
 
 export const INVITATION_ERROR_CODE = {
@@ -182,6 +190,10 @@ export const PRESENTATION_ERROR_CODE = {
     INVALID_OWNER: {
         statusCode: 401,
         message: 'Invalid owner',
+    },
+    MISSING_PRESENT_TO: {
+        statusCode: 400,
+        message: 'Missing group that presentation will be presented to',
     },
 }
 export const GENERAL_ERROR_CODE = {

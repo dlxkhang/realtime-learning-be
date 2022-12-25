@@ -1,4 +1,6 @@
 import Privilege from './Privilege.enum'
 import Role from './Role.enum'
 import SlideType from './SlideType.enum'
-export { Privilege, Role, SlideType }
+import Access from './Access.enum'
+
+export { Privilege, Role, SlideType, Access }
