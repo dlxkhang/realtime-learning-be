@@ -106,6 +106,45 @@ class GroupService {
         const groups: IGroupDTO[] = await this.repository.getGroupByOwner(ownerId)
         return groups
     }
+    async getGroupHasCoOwner(coOwnerId: string): Promise<IGroupDTO[]> {
+        const pipeline = [
+            {
+                $match: {
+                    deleted: false,
+                },
+            },
+            {
+                $addFields: {
+                    coOwnerId: '$coOwners',
+                },
+            },
+            {
+                $unwind: {
+                    path: '$coOwnerId',
+                    preserveNullAndEmptyArrays: true,
+                },
+            },
+            {
+                $match: {
+                    coOwners: coOwnerId.toString(),
+                },
+            },
+            {
+                $group: {
+                    _id: '$_id',
+                    name: { $first: '$name' },
+                    description: { $first: '$description' },
+                    avatar: { $first: '$avatar' },
+                    background: { $first: '$background' },
+                    owner: { $first: '$owner' },
+                    members: { $first: '$members' },
+                    coOwners: { $first: '$coOwners' },
+                },
+            },
+        ]
+        const groups: IGroupDTO[] = await this.repository.aggregate(pipeline)
+        return groups
+    }
 
     async addMemberToGroup(groupId: string, memberId: string): Promise<IGroupDTO> {
         const group: IGroupDTO = await this.repository.getGroupById(groupId)

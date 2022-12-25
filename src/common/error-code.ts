@@ -77,6 +77,10 @@ export const GROUP_ERROR_CODE = {
         statusCode: 400,
         message: 'Already has presenting slide',
     },
+    INVALID_PRIVILEGE: {
+        statusCode: 400,
+        message: 'Invalid privilege',
+    },
 }
 
 export const INVITATION_ERROR_CODE = {

@@ -156,4 +156,34 @@ export default {
         }
         throw GROUP_ERROR_CODE.NOT_HAVING_PERMISSION
     }),
+    getGroupHasPrivilege: controllerWrapper(async (event: IEvent) => {
+        const { privileges } = event.body
+        const user = event.user
+        const roles: Role[] = RoleImpl.getRole(privileges)
+        console.log('roles', roles)
+        const isChecked = {
+            [Role.ADMINISTRATOR]: false,
+            [Role.CO_ADMINISTRATOR]: false,
+            [Role.MEMBER]: false,
+            [Role.GUEST]: true,
+        }
+        let groupDTOs: IGroupDTO[] = []
+        for (let role of roles) {
+            if (isChecked[role]) continue
+            let groups
+            if (role === Role.ADMINISTRATOR) {
+                groups = await groupService.getGroupOwn(user._id)
+            } else if (role === Role.CO_ADMINISTRATOR) {
+                groups = await groupService.getGroupHasCoOwner(user._id)
+            } else if (role === Role.MEMBER) {
+                groups = await groupService.getGroupHasMember(user._id)
+            }
+            groupDTOs = groupDTOs.concat(groups)
+            isChecked[role] = true
+        }
+        const groupsGeneral: IGroupGeneral[] = await Promise.all(groupDTOs.map(mapToGeneral))
+        return {
+            groups: groupsGeneral,
+        }
+    }),
 }
