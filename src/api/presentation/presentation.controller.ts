@@ -207,4 +207,16 @@ export default {
         )
         return collaborators.map((collaborator) => userMapper(collaborator))
     }),
+
+    getCollaboratedPresentations: controllerWrapper(async (event: IEvent) => {
+        const userId = event.user._id.toString()
+        const presentations = await presentationService.getCollaboratedPresentations(userId)
+        return presentations.map((presentation) => mapToPresentationResponse(presentation))
+    }),
+
+    getParticipatedPresentations: controllerWrapper(async (event: IEvent) => {
+        const userId = event.user._id.toString()
+        const presentations = await presentationService.getParticipatedPresentations(userId)
+        return presentations.map((presentation) => mapToPresentationResponse(presentation))
+    }),
 }

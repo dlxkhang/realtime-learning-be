@@ -184,6 +184,26 @@ class PresentationRepository {
             ...otherOptions,
         })
     }
+
+    async find(
+        filter: FilterQuery<Presentation>,
+        projection?: ProjectionType<any>,
+        options?: QueryOptions<any>,
+    ): Promise<Presentation[]> {
+        const { populate, ...otherOptions } = options
+        return await presentationModel.find(filter, projection, {
+            new: true,
+            lean: true,
+            populate: [
+                {
+                    path: 'createBy',
+                    select: 'fullName avatar email',
+                },
+                ...(populate as any),
+            ],
+            ...otherOptions,
+        })
+    }
 }
 
 export default new PresentationRepository()

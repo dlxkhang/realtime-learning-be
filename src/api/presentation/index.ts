@@ -72,4 +72,16 @@ router.delete(
     passport.authenticate('jwt', { session: false }),
     presentationController.removeCollaborator,
 )
+
+router.get(
+    '/collaborated',
+    passport.authenticate('jwt', { session: false }),
+    presentationController.getCollaboratedPresentations,
+)
+
+router.get(
+    '/participated',
+    passport.authenticate('jwt', { session: false }),
+    presentationController.getParticipatedPresentations,
+)
 export default router
