@@ -25,6 +25,11 @@ router.get(
     groupController.getGroupJoined,
 )
 router.post(
+    '/groupHasPrivilege',
+    passport.authenticate('jwt', { session: false }),
+    groupController.getGroupHasPrivilege,
+)
+router.post(
     '/addMember/:groupId',
     passport.authenticate('jwt', { session: false }),
     groupController.addMember,

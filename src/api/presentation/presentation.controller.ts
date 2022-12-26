@@ -1,5 +1,22 @@
-import { IEvent } from '../../interfaces'
+import { PresentationEvent } from './../socket/event'
+import { RoleImpl } from '../../implementation'
+import { Access, Privilege, SlideType } from '../../enums'
+import { IEvent, IUser } from '../../interfaces'
 import controllerWrapper from '../../core/controllerWrapper'
+import { IMessage } from '../../interfaces/message/message.interface'
+import { mapTo as userMapper } from '../user/mapper'
+import {
+    IHeadingSlide,
+    IMultipleChoiceSlide,
+    IParagraphSlide,
+    Presentation,
+    Slide,
+} from '../../interfaces/presentation/presentation.interface'
+import groupService from '../group/group.service'
+import { GROUP_ERROR_CODE, PRESENTATION_ERROR_CODE } from './../../common/error-code'
+import { mapToPresentationResponse, mapToSlideListResponse, mapToSlideResponse } from './mapper'
+import presentationService from './presentation.service'
+import socketService from '../socket/socket.service'
 import presentationRepository from './presentation.repository'
 import presentationService from './presentation.service'
 import {
@@ -30,7 +47,6 @@ export default {
     }),
     getPresentationById: controllerWrapper(async (event: IEvent) => {
         const presentationId = event.params.id
-
         const presentation = await presentationService.getById(presentationId)
         return mapToPresentationResponse(presentation)
     }),
@@ -54,34 +70,78 @@ export default {
     }),
 
     addSlide: controllerWrapper(async (event: IEvent) => {
-        const { presentationId, text, optionList } = event.body
-        const modifiedPresentation = await presentationService.addSlide(presentationId, {
-            text,
-            optionList,
-        } as Slide)
-        return mapToSlideListResponse(modifiedPresentation)
+        const { presentationId, type, data } = event.body
+        if (!type) {
+            throw PRESENTATION_ERROR_CODE.MISSING_SLIDE_TYPE
+        }
+        let newSlide: Slide = {
+            type: type,
+        }
+        const modifiedPresentation = await presentationService.addSlide(presentationId, newSlide)
+        return mapToSlideListResponse(modifiedPresentation.slideList)
     }),
 
     deleteSlideById: controllerWrapper(async (event: IEvent) => {
         const { presentationId, slideId } = event.params
         const modifiedPresentation = await presentationService.deleteSlide(presentationId, slideId)
-        return mapToSlideListResponse(modifiedPresentation)
+        return mapToSlideListResponse(modifiedPresentation.slideList)
     }),
 
     getSlideList: controllerWrapper(async (event: IEvent) => {
+        console.log('event', event.params)
         const presentationId = event.params.presentationId
+        const { page, pageSize } = event.query
         const presentation = await presentationService.getById(presentationId)
-        return mapToSlideListResponse(presentation)
+        const slideList = presentation.slideList.slice((page - 1) * pageSize, page * pageSize)
+        return mapToSlideListResponse(slideList)
     }),
 
     editSlideById: controllerWrapper(async (event: IEvent) => {
         const slideId = event.params.slideId
-        const { presentationId, text, optionList } = event.body
-        const modifiedPresentation = await presentationService.editSlide(presentationId, slideId, {
-            text,
-            optionList,
-        } as Slide)
-        return mapToSlideListResponse(modifiedPresentation)
+        const { presentationId, type, data } = event.body
+        if (!type) {
+            throw PRESENTATION_ERROR_CODE.MISSING_SLIDE_TYPE
+        }
+        let updatedSlide: Slide = {
+            type: type,
+        }
+        switch (type) {
+            case SlideType.MULTIPLE_CHOICE: {
+                const { text, optionList } = data
+                updatedSlide = {
+                    ...updatedSlide,
+                    text,
+                    optionList,
+                } as IMultipleChoiceSlide
+                break
+            }
+            case SlideType.HEADING: {
+                const { heading, subHeading } = data
+                updatedSlide = {
+                    ...updatedSlide,
+                    heading: heading,
+                    subHeading,
+                } as IHeadingSlide
+                break
+            }
+            case SlideType.PARAGRAPH: {
+                const { heading, paragraph } = data
+                updatedSlide = {
+                    ...updatedSlide,
+                    heading,
+                    paragraph,
+                } as IParagraphSlide
+                break
+            }
+            default:
+                throw PRESENTATION_ERROR_CODE.NOT_SUPPORTED_SLIDE_TYPE
+        }
+        const modifiedPresentation = await presentationService.editSlide(
+            presentationId,
+            slideId,
+            updatedSlide,
+        )
+        return mapToSlideListResponse(modifiedPresentation.slideList)
     }),
     updateAnswer: controllerWrapper(async (event: IEvent) => {
         const { presentationCode, optionId } = event.body
@@ -93,7 +153,19 @@ export default {
         else return { ok: true }
     }),
     getPresentingSlide: controllerWrapper(async (event: IEvent) => {
-        const { presentationCode } = event.params
+        const { presentationCode, groupId } = event.params
+        const user = event.user
+        if (groupId && user?._id) {
+            const group = await groupService.getGroup(groupId)
+            if (!group) {
+                throw GROUP_ERROR_CODE.GROUP_NOT_FOUND
+            }
+            const role = await groupService.roleOf(user, groupId)
+            const userRole = new RoleImpl(user, role)
+            if (!userRole.hasPermission(Privilege.VIEWING)) {
+                throw PRESENTATION_ERROR_CODE.NOT_HAVING_PERMISSION
+            }
+        }
         const slide = await presentationService.getPresentingSlide(presentationCode)
         return mapToSlideResponse(slide)
     }),
@@ -105,7 +177,41 @@ export default {
     }),
 
     updatePresentStatus: controllerWrapper(async (event: IEvent) => {
-        const { presentationId, slideId, isPresenting } = event.body
+        // presentTo: groupId,
+        // access: Access
+        const { presentationId, slideId, isPresenting, access, presentTo } = event.body
+        const presentation = await presentationService.getById(presentationId)
+        if (!presentation) {
+            throw PRESENTATION_ERROR_CODE.PRESENTATION_NOT_FOUND
+        }
+        const slideMatch = presentation.slideList.find((slide) => slide._id.toString() === slideId)
+        if (!slideMatch) {
+            throw PRESENTATION_ERROR_CODE.SLIDE_NOT_FOUND
+        }
+        const user = event.user
+        if (!isPresenting) {
+            // stop presenting
+            await groupService.stopPresentingForGroups(presentationId)
+        } else {
+            // start presenting
+            if (access === Access.ONLY_GROUP) {
+                if (!presentTo) throw PRESENTATION_ERROR_CODE.MISSING_PRESENT_TO
+                console.log('Start presenting', access, presentTo)
+                const groupId = presentTo
+                const group = await groupService.getGroup(groupId)
+                if (!group) {
+                    throw GROUP_ERROR_CODE.GROUP_NOT_FOUND
+                }
+                const role = await groupService.roleOf(user, groupId)
+                console.log('role', role)
+                const userRole = new RoleImpl(user, role)
+                if (!userRole.hasPermission(Privilege.PRESENTING)) {
+                    throw PRESENTATION_ERROR_CODE.NOT_HAVING_PERMISSION
+                }
+                await groupService.startPresenting(groupId, presentationId)
+                socketService.broadcastToRoom(groupId, PresentationEvent.NEW_PRESENTING_IN_GROUP)
+            }
+        }
         const slide = await presentationService.updatePresentStatus(
             presentationId,
             slideId,
@@ -147,6 +253,37 @@ export default {
         return messages
     }),
 
+    getCollaborators: controllerWrapper(async (event: IEvent) => {
+        const { presentationId } = event.params
+        const { skip, limit } = event.query
+        const collaborators = await presentationService.getCollaborators(presentationId, {
+            skip,
+            limit,
+        })
+        return collaborators.map((collaborator) => userMapper(collaborator))
+    }),
+
+    removeCollaborator: controllerWrapper(async (event: IEvent) => {
+        const { presentationId, collaboratorId } = event.params
+        const userId = event.user._id.toString()
+        const collaborators = await presentationService.removeCollaborator(
+            userId,
+            presentationId,
+            collaboratorId,
+        )
+        return collaborators.map((collaborator) => userMapper(collaborator))
+    }),
+
+    getCollaboratedPresentations: controllerWrapper(async (event: IEvent) => {
+        const userId = event.user._id.toString()
+        const presentations = await presentationService.getCollaboratedPresentations(userId)
+        return presentations.map((presentation) => mapToPresentationResponse(presentation))
+    }),
+
+    getParticipatedPresentations: controllerWrapper(async (event: IEvent) => {
+        const userId = event.user._id.toString()
+        const presentations = await presentationService.getParticipatedPresentations(userId)
+        return presentations.map((presentation) => mapToPresentationResponse(presentation))
     addAnonymousQnAQuestion: controllerWrapper(async (event: IEvent) => {
         const { presentationCode, qnaQuestion } = event.body
         const anonymousQuestion: QnAQuestion = {

@@ -1,13 +1,19 @@
-import { AcceptInvitationDTO, CreateEmailInvitationDTO, CreateSharedInvitationDTO } from './dto'
+import {
+    AcceptInvitationDTO,
+    CreateEmailInvitationDTO,
+    CreatePresentationInvitationDTO,
+    CreateSharedInvitationDTO,
+} from './dto'
 import userService from '../user/user.service'
 import { INVITATION_ERROR_CODE } from '../../common/error-code'
 import groupService from '../group/group.service'
 import invitationModel from './model/invitation.model'
 import { InvitationType } from '../../common/enum'
-import { IInvitation } from '../../interfaces'
-import { generateEmailInvitationLink } from '../../utils'
+import { IInvitation, IUser } from '../../interfaces'
+import { generateEmailInvitationLink, generatePresentationInvitationLink } from '../../utils'
 import templates from '../../common/templates'
 import mailService from '../../utils/mail.util'
+import presentationService from '../presentation/presentation.service'
 
 class InvitationService {
     async getInvitation(
@@ -165,7 +171,7 @@ class InvitationService {
                     // undo any changes that might have happened
                     await session.abortTransaction()
                     session.endSession()
-                    console.log(error)
+
                     throw error
                 }
             }),
@@ -174,6 +180,134 @@ class InvitationService {
         return {
             ok: true,
         }
+    }
+
+    async createPresentationInvitation(
+        createPresentationInvitationDTO: CreatePresentationInvitationDTO,
+    ): Promise<{
+        ok: true
+    }> {
+        const { inviterId, presentationId, inviteeEmails } = createPresentationInvitationDTO
+        const inviter = await userService.getUserById(inviterId)
+        if (!inviter) throw INVITATION_ERROR_CODE.INVITER_NOT_FOUND
+
+        const presentation = await presentationService.getById(presentationId)
+        if (!presentation) throw INVITATION_ERROR_CODE.PRESENTATION_ID_NOT_FOUND
+
+        const collaborators = await presentationService.getCollaborators(presentationId)
+
+        const owner = presentation.createBy as IUser
+        console.log('owner: ', owner);
+        if (owner._id.toString() !== inviterId.toString())
+        throw INVITATION_ERROR_CODE.UNAUTHORIZED_INVITER
+        console.log('owner:1 ', owner);
+        
+        const session = await invitationModel.startSession()
+        session.startTransaction()
+        await Promise.all(
+            inviteeEmails.map(async (inviteeEmail: string) => {
+                if (
+                    (collaborators && collaborators.find((item) => item.email === inviteeEmail)) ||
+                    owner.email === inviteeEmail
+                )
+                    throw INVITATION_ERROR_CODE.INVITEE_DUPLICATED
+
+                try {
+                    const invitation = await invitationModel.create(
+                        [
+                            {
+                                type: InvitationType.EMAIL_INVITATION,
+                                inviter: inviterId,
+                                presentation: presentationId,
+                                inviteeEmail,
+                            },
+                        ],
+                        { session },
+                    )
+
+                    const invitationLink = generatePresentationInvitationLink(invitation[0]._id)
+                    const inviterName = inviter.fullName || inviter.email
+                    await mailService.send(
+                        templates.presentationInvitationEmail(
+                            inviteeEmail,
+                            inviterName,
+                            presentation.name,
+                            invitationLink,
+                        ),
+                    )
+                } catch (error) {
+                    // If an error occurred, abort the whole transaction and
+                    // undo any changes that might have happened
+                    await session.abortTransaction()
+                    session.endSession()
+                    throw error
+                }
+            }),
+        )
+        await session.commitTransaction()
+        session.endSession()
+        return {
+            ok: true,
+        }
+    }
+
+    async getPresentationInvitation(invitationId: string): Promise<IInvitation> {
+        const invitation = await invitationModel.findById(
+            invitationId,
+            {},
+            {
+                populate: [
+                    {
+                        path: 'inviter',
+                        select: 'fullName avatar',
+                    },
+                    {
+                        path: 'presentation',
+                        select: 'name description createBy',
+                    },
+                ],
+                lean: true,
+            },
+        )
+        if (!invitation) throw INVITATION_ERROR_CODE.INVITATION_ID_NOT_FOUND
+
+        return invitation
+    }
+
+    async validatePresentationInvitation(
+        inviteeId: string,
+        invitationId: string,
+    ): Promise<IInvitation> {
+        const invitation = await invitationModel.findById(invitationId, {}, {})
+        if (!invitation) throw INVITATION_ERROR_CODE.INVITATION_ID_NOT_FOUND
+
+        const invitee = await userService.getUserById(inviteeId)
+        if (!invitee) throw INVITATION_ERROR_CODE.INVITEE_NOT_FOUND
+        if (
+            invitation.type === InvitationType.EMAIL_INVITATION &&
+            invitee.email !== invitation.inviteeEmail
+        )
+            throw INVITATION_ERROR_CODE.INVALID_INVITEE_EMAIL
+
+        if (invitation.inviter.toString() === inviteeId)
+            throw INVITATION_ERROR_CODE.INVITER_DUPLICATED
+
+        return invitation
+    }
+
+    async acceptPresentationInvitation(acceptInvitationDto: AcceptInvitationDTO): Promise<{
+        ok: boolean
+    }> {
+        const { inviteeId, invitationId } = acceptInvitationDto
+        const invitation = await this.validatePresentationInvitation(inviteeId, invitationId)
+
+        // Add invited user to the presentation
+        await presentationService.addCollaborator(invitation.presentation.toString(), inviteeId)
+
+        await invitationModel.deleteOne({
+            _id: invitation._id,
+        })
+        return { ok: true }
     }
 }
 

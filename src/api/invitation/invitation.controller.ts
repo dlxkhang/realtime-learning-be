@@ -70,6 +70,50 @@ class InvitationController {
             )
         }
     }
+
+    async createPresentationInvitation(req: Request, res: Response) {
+        try {
+            const { _id } = req.user as IUser
+            const status = await invitationService.createPresentationInvitation({
+                inviterId: _id,
+                presentationId: req.body.presentationId,
+                inviteeEmails: req.body.inviteeEmails,
+            })
+            res.json(status)
+        } catch (err) {
+            res.status(err.statusCode ? err.statusCode : 500).send(
+                err.message ? err.message : 'Internal Server Error',
+            )
+        }
+    }
+
+    async getPresentationInvitation(req: Request, res: Response) {
+        try {
+            const invitation = await invitationService.getPresentationInvitation(req.params.id)
+
+            const transformedInvitation = await mapTo(invitation)
+            res.json(transformedInvitation)
+        } catch (err) {
+            res.status(err.statusCode ? err.statusCode : 500).send(
+                err.message ? err.message : 'Internal Server Error',
+            )
+        }
+    }
+
+    async acceptPresentationInvitation(req: Request, res: Response) {
+        try {
+            const { _id } = req.user as IUser
+            const status = await invitationService.acceptPresentationInvitation({
+                inviteeId: _id,
+                invitationId: req.body.invitationId,
+            })
+            res.json(status)
+        } catch (err) {
+            res.status(err.statusCode ? err.statusCode : 500).send(
+                err.statusCode ? err.message : 'Internal Server Error',
+            )
+        }
+    }
 }
 
 export default new InvitationController()

@@ -1,16 +1,20 @@
 import mongoose from 'mongoose'
-import { Option, Presentation, Slide } from '../../interfaces/presentation/presentation.interface'
+import {
+    IHeadingSlide,
+    IMultipleChoiceSlide,
+    IParagraphSlide,
+    Presentation,
+    Slide,
+} from '../../interfaces'
 
-import userModel from '../user/model/user.model'
 const { Schema } = mongoose
-const Option = new Schema<Option>({
-    answer: { type: String, required: true },
-    votes: { type: Number },
-})
-
-const Slide = new Schema<Slide>({
+const Slide = new Schema<IHeadingSlide | IMultipleChoiceSlide | IParagraphSlide>({
+    type: { type: String },
     text: { type: String },
-    optionList: [{ type: Option }],
+    optionList: [{ type: Schema.Types.Mixed }],
+    heading: { type: String },
+    subHeading: { type: String },
+    paragraph: { type: String },
 })
 const QnAQuestion = new Schema({
     question: { type: String, required: true },
@@ -28,6 +32,7 @@ const Presentation = new Schema<Presentation>({
     inviteCode: { type: String },
     slideList: [{ type: Slide }],
     messages: [{ type: Schema.Types.Mixed }],
+    collaborators: [{ type: Schema.Types.ObjectId, default: [], ref: 'User' }],
     qnaQuestionList: [{ type: QnAQuestion }],
 })
 

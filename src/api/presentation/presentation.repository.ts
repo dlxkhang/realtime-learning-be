@@ -1,4 +1,11 @@
-import { FilterQuery, QueryOptions, UpdateQuery, PipelineStage, AggregateOptions } from 'mongoose'
+import {
+    FilterQuery,
+    QueryOptions,
+    UpdateQuery,
+    PipelineStage,
+    AggregateOptions,
+    ProjectionType,
+} from 'mongoose'
 import { PRESENTATION_ERROR_CODE } from '../../common/error-code'
 import { Presentation, Slide } from '../../interfaces/presentation/presentation.interface'
 import presentationModel from './presentation.model'
@@ -38,7 +45,7 @@ class PresentationRepository {
                 populate: [
                     {
                         path: 'createBy',
-                        select: 'fullName avatar',
+                        select: 'fullName avatar email',
                     },
                 ],
                 lean: true,
@@ -137,6 +144,66 @@ class PresentationRepository {
         options: AggregateOptions = {},
     ): Promise<Presentation[]> {
         return presentationModel.aggregate(pipeline, options)
+    }
+
+    async findById(
+        id: any,
+        projection?: ProjectionType<any>,
+        options?: QueryOptions<Presentation>,
+    ): Promise<Presentation> {
+        const { populate, ...otherOptions } = options
+        return await presentationModel.findById(id, projection, {
+            new: true,
+            lean: true,
+            ...otherOptions,
+            populate: [
+                {
+                    path: 'createBy',
+                    select: 'fullName avatar email',
+                },
+                ...(populate as any),
+            ],
+        })
+    }
+
+    async findOne(
+        filter: FilterQuery<Presentation>,
+        projection?: ProjectionType<any>,
+        options?: QueryOptions<any>,
+    ): Promise<Presentation> {
+        const { populate, ...otherOptions } = options
+        return await presentationModel.findOne(filter, projection, {
+            new: true,
+            lean: true,
+            populate: [
+                {
+                    path: 'createBy',
+                    select: 'fullName avatar email',
+                },
+                ...(populate as any),
+            ],
+            ...otherOptions,
+        })
+    }
+
+    async find(
+        filter: FilterQuery<Presentation>,
+        projection?: ProjectionType<any>,
+        options?: QueryOptions<any>,
+    ): Promise<Presentation[]> {
+        const { populate, ...otherOptions } = options
+        return await presentationModel.find(filter, projection, {
+            new: true,
+            lean: true,
+            populate: [
+                {
+                    path: 'createBy',
+                    select: 'fullName avatar email',
+                },
+                ...(populate as any),
+            ],
+            ...otherOptions,
+        })
     }
 }
 
