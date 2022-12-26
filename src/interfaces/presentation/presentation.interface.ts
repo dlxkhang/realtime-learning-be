@@ -1,6 +1,5 @@
 import { Types } from 'mongoose'
 import { SlideType } from '../../enums'
-import mongoose, { Types } from 'mongoose'
 import { IMessage } from '../message/message.interface'
 import { IUser } from '../user'
 interface Option {
@@ -97,12 +96,9 @@ export {
     IHeadingSlide,
     IParagraphSlide,
     IMultipleChoiceSlide,
-    PresentationResponse,
-    SlideResponse,
     IMultipleChoiceSlideResponse,
     IHeadingSlideResponse,
     IParagraphSlideResponse,
-    OptionResponse,
     PresentationResponse,
     SlideResponse,
     OptionResponse,

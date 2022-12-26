@@ -6,14 +6,9 @@ import {
     IParagraphSlide,
     Option,
     Presentation,
-import mongoose, { Error, PipelineStage } from 'mongoose'
-import { PRESENTATION_ERROR_CODE } from '../../common/error-code'
-import {
-    Option,
-    Presentation,
-    QnAQuestion,
-    Slide,
 } from '../../interfaces/presentation/presentation.interface'
+import mongoose, { Error, PipelineStage } from 'mongoose'
+import { QnAQuestion, Slide } from '../../interfaces/presentation/presentation.interface'
 import presentationRepository from './presentation.repository'
 import userModel from '../user/model/user.model'
 import socketService from '../socket/socket.service'
@@ -400,8 +395,8 @@ class PresentationService {
             if (!presentationId) {
                 throw PRESENTATION_ERROR_CODE.PRESENTATION_MISSING_ID
             }
-            const parsedLimit = options.limit ? parseInt(options.limit.toString()): undefined
-            const parsedSkip = options.skip ? parseInt(options.skip.toString()): undefined
+            const parsedLimit = options.limit ? parseInt(options.limit.toString()) : undefined
+            const parsedSkip = options.skip ? parseInt(options.skip.toString()) : undefined
 
             const presentation = await this.repository.findById(
                 presentationId,
@@ -568,6 +563,12 @@ class PresentationService {
                     ],
                 },
             )
+        } catch (e) {
+            if (e instanceof Error.CastError) {
+                throw PRESENTATION_ERROR_CODE.PRESENTATION_INVALID_ID
+            } else throw e
+        }
+    }
     async addQnAQuestion(
         presentationCode: string,
         qnaQuestion: QnAQuestion,

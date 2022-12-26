@@ -3,19 +3,14 @@ import { RoleImpl } from '../../implementation'
 import { Access, Privilege, SlideType } from '../../enums'
 import { IEvent, IUser } from '../../interfaces'
 import controllerWrapper from '../../core/controllerWrapper'
-import { IMessage } from '../../interfaces/message/message.interface'
 import { mapTo as userMapper } from '../user/mapper'
 import {
     IHeadingSlide,
     IMultipleChoiceSlide,
     IParagraphSlide,
-    Presentation,
-    Slide,
 } from '../../interfaces/presentation/presentation.interface'
 import groupService from '../group/group.service'
 import { GROUP_ERROR_CODE, PRESENTATION_ERROR_CODE } from './../../common/error-code'
-import { mapToPresentationResponse, mapToSlideListResponse, mapToSlideResponse } from './mapper'
-import presentationService from './presentation.service'
 import socketService from '../socket/socket.service'
 import presentationRepository from './presentation.repository'
 import presentationService from './presentation.service'
@@ -284,6 +279,7 @@ export default {
         const userId = event.user._id.toString()
         const presentations = await presentationService.getParticipatedPresentations(userId)
         return presentations.map((presentation) => mapToPresentationResponse(presentation))
+    }),
     addAnonymousQnAQuestion: controllerWrapper(async (event: IEvent) => {
         const { presentationCode, qnaQuestion } = event.body
         const anonymousQuestion: QnAQuestion = {
