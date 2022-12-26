@@ -5,13 +5,19 @@ import {
     IParagraphSlide,
     Presentation,
     Slide,
+    Option
 } from '../../interfaces'
-
 const { Schema } = mongoose
+
+const Option = new Schema<Option>({
+    answer: { type: String, required: true },
+    votes: { type: Number },
+})
+
 const Slide = new Schema<IHeadingSlide | IMultipleChoiceSlide | IParagraphSlide>({
     type: { type: String },
     text: { type: String },
-    optionList: [{ type: Schema.Types.Mixed }],
+    optionList: [{ type: Option }],
     heading: { type: String },
     subHeading: { type: String },
     paragraph: { type: String },
