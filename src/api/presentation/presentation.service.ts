@@ -6,19 +6,19 @@ import {
     IParagraphSlide,
     Option,
     Presentation,
-    Slide,
 } from '../../interfaces/presentation/presentation.interface'
+import mongoose, { Error, PipelineStage } from 'mongoose'
+import { QnAQuestion, Slide } from '../../interfaces/presentation/presentation.interface'
 import presentationRepository from './presentation.repository'
-import { Error, PipelineStage } from 'mongoose'
-import * as crypto from 'crypto-js'
 import userModel from '../user/model/user.model'
 import socketService from '../socket/socket.service'
-import { ChatEvent, PresentationEvent } from '../socket/event'
+import { ChatEvent, PresentationEvent, QnAEvent } from '../socket/event'
 import { IMessage } from '../../interfaces/message/message.interface'
 import { IUser } from '../../interfaces'
 
 class PresentationService {
     private repository: typeof presentationRepository
+
     constructor() {
         this.repository = presentationRepository
     }
@@ -42,8 +42,9 @@ class PresentationService {
             currentSlide: 0,
             slideList: [],
         }
-        return await this.repository.create(presentation)
+        return this.repository.create(presentation)
     }
+
     async getById(presentationId?: string): Promise<Presentation> {
         try {
             if (!presentationId) {
@@ -60,6 +61,7 @@ class PresentationService {
             } else throw e
         }
     }
+
     async editById(presentationId: string, presentation: Presentation): Promise<Presentation> {
         try {
             if (!presentationId) {
@@ -122,6 +124,7 @@ class PresentationService {
             } else throw e
         }
     }
+
     async deleteSlide(presentationId: string, slideId: string) {
         try {
             if (!presentationId) {
@@ -235,6 +238,7 @@ class PresentationService {
             } else throw e
         }
     }
+
     // get presentation list by userId
     async getPresentationListByUserId(userId: string): Promise<Presentation[]> {
         try {
@@ -391,8 +395,8 @@ class PresentationService {
             if (!presentationId) {
                 throw PRESENTATION_ERROR_CODE.PRESENTATION_MISSING_ID
             }
-            const parsedLimit = options.limit ? parseInt(options.limit.toString()): undefined
-            const parsedSkip = options.skip ? parseInt(options.skip.toString()): undefined
+            const parsedLimit = options.limit ? parseInt(options.limit.toString()) : undefined
+            const parsedSkip = options.skip ? parseInt(options.skip.toString()) : undefined
 
             const presentation = await this.repository.findById(
                 presentationId,
@@ -559,6 +563,135 @@ class PresentationService {
                     ],
                 },
             )
+        } catch (e) {
+            if (e instanceof Error.CastError) {
+                throw PRESENTATION_ERROR_CODE.PRESENTATION_INVALID_ID
+            } else throw e
+        }
+    }
+    async addQnAQuestion(
+        presentationCode: string,
+        qnaQuestion: QnAQuestion,
+    ): Promise<QnAQuestion[]> {
+        try {
+            const presentation = await this.repository.getPresentationByCode(presentationCode)
+            if (!presentation) {
+                throw PRESENTATION_ERROR_CODE.PRESENTATION_NOT_FOUND
+            }
+
+            qnaQuestion._id = new mongoose.Types.ObjectId().toString()
+            const updatePresentation = await this.repository.findOneAndUpdate(
+                { inviteCode: presentationCode },
+                {
+                    $push: { qnaQuestionList: qnaQuestion },
+                },
+            )
+
+            if (updatePresentation) {
+                // Announce to clients
+                const responseQnaQuestion = { ...qnaQuestion, id: qnaQuestion._id.toString() }
+                delete responseQnaQuestion._id
+                socketService.broadcastToRoom(
+                    updatePresentation.inviteCode,
+                    QnAEvent.NEW_QNA_QUESTION,
+                    responseQnaQuestion,
+                )
+            }
+            return updatePresentation.qnaQuestionList
+        } catch (e) {
+            if (e instanceof Error.CastError) {
+                throw PRESENTATION_ERROR_CODE.PRESENTATION_INVALID_ID
+            } else throw e
+        }
+    }
+
+    async getQnAQuesionList(
+        presentationCode: string,
+        options: { page?: string; pageSize?: string; sort?: any } = {},
+    ): Promise<QnAQuestion[]> {
+        try {
+            const { page, pageSize } = options
+            const skipPipe: PipelineStage = page &&
+                pageSize && {
+                    $skip: (parseInt(page) - 1) * parseInt(pageSize),
+                }
+            const limitPipe: PipelineStage = pageSize && {
+                $limit: parseInt(pageSize),
+            }
+            const pipeline: PipelineStage[] = [
+                {
+                    $match: {
+                        inviteCode: presentationCode,
+                    },
+                },
+                {
+                    $unwind: '$qnaQuestionList',
+                },
+                {
+                    $project: {
+                        qnaQuestion: '$qnaQuestionList',
+                    },
+                },
+                {
+                    $sort: {
+                        'qnaQuestion.likeCount': -1,
+                    },
+                },
+            ]
+            if (skipPipe) {
+                pipeline.push(skipPipe)
+            }
+            if (limitPipe) {
+                pipeline.push(limitPipe)
+            }
+            pipeline.push({
+                $group: {
+                    _id: '_id',
+                    qnaQuestionList: {
+                        $push: '$qnaQuestion',
+                    },
+                },
+            })
+            console.log('pipeline', JSON.stringify(pipeline))
+            const presentations = await this.repository.aggregate(pipeline)
+            console.log('Presentations', presentations)
+            const qnaQuestionList = presentations?.[0]?.qnaQuestionList ?? []
+            return qnaQuestionList
+        } catch (e) {
+            if (e instanceof Error.CastError) {
+                throw PRESENTATION_ERROR_CODE.PRESENTATION_INVALID_ID
+            } else throw e
+        }
+    }
+
+    async updateQnAQuestion(
+        presentationCode: string,
+        qnaQuestion: QnAQuestion,
+    ): Promise<QnAQuestion[]> {
+        try {
+            const presentation = await this.repository.getPresentationByCode(presentationCode)
+            if (!presentation) {
+                throw PRESENTATION_ERROR_CODE.PRESENTATION_NOT_FOUND
+            }
+            const qnaQuestionId = new mongoose.Types.ObjectId(qnaQuestion._id)
+            const updatePresentation = await this.repository.findOneAndUpdate(
+                { inviteCode: presentationCode, 'qnaQuestionList._id': qnaQuestionId },
+                {
+                    $set: { 'qnaQuestionList.$': qnaQuestion },
+                },
+            )
+
+            if (updatePresentation) {
+                const responseQnaQuestion = { ...qnaQuestion, id: qnaQuestion._id.toString() }
+                delete responseQnaQuestion._id
+                // Announce to clients
+                socketService.broadcastToRoom(
+                    updatePresentation.inviteCode,
+                    QnAEvent.UPDATE_QNA_QUESTION,
+                    responseQnaQuestion,
+                )
+            }
+            return updatePresentation.qnaQuestionList
         } catch (e) {
             if (e instanceof Error.CastError) {
                 throw PRESENTATION_ERROR_CODE.PRESENTATION_INVALID_ID

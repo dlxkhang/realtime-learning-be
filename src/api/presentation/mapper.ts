@@ -7,6 +7,8 @@ import {
     Presentation,
     Slide,
     OptionResponse,
+    QnAQuestion,
+    QnAQuestionResponse,
     IMultipleChoiceSlide,
     IMultipleChoiceSlideResponse,
     IHeadingSlide,
@@ -85,4 +87,21 @@ const mapToOptionResponse = (option: Option): OptionResponse => {
     }
 }
 
-export { mapToPresentationResponse, mapToSlideResponse, mapToSlideListResponse }
+const mapToQnAQuestionResponse = (questions: QnAQuestion[]): QnAQuestionResponse[] => {
+    return questions.map((question) => {
+        return {
+            id: question._id,
+            question: question.question,
+            likeCount: question.likeCount,
+            isAnswered: question.isAnswered,
+            date: question.date,
+        }
+    })
+}
+
+export {
+    mapToPresentationResponse,
+    mapToSlideResponse,
+    mapToSlideListResponse,
+    mapToQnAQuestionResponse,
+}

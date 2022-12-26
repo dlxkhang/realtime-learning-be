@@ -16,6 +16,13 @@ const Slide = new Schema<IHeadingSlide | IMultipleChoiceSlide | IParagraphSlide>
     subHeading: { type: String },
     paragraph: { type: String },
 })
+const QnAQuestion = new Schema({
+    question: { type: String, required: true },
+    likeCount: { type: Number, default: 0 },
+    isAnswered: { type: Boolean, default: false },
+    date: { type: Date, default: Date.now },
+})
+
 const Presentation = new Schema<Presentation>({
     name: { type: String },
     description: { type: String },
@@ -26,6 +33,7 @@ const Presentation = new Schema<Presentation>({
     slideList: [{ type: Slide }],
     messages: [{ type: Schema.Types.Mixed }],
     collaborators: [{ type: Schema.Types.ObjectId, default: [], ref: 'User' }],
+    qnaQuestionList: [{ type: QnAQuestion }],
 })
 
 export default mongoose.model('Presentations', Presentation)

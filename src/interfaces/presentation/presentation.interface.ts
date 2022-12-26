@@ -36,6 +36,7 @@ interface Presentation {
     slideList?: Slide[]
     messages?: IMessage[]
     collaborators?: IUser[]
+    qnaQuestionList?: QnAQuestion[]
 }
 
 interface PresentationResponse {
@@ -74,6 +75,20 @@ interface OptionResponse {
     votes: Number
 }
 
+interface QnAQuestion {
+    _id?: string
+    question: string
+    likeCount: number
+    isAnswered: boolean
+    date: Date
+}
+interface QnAQuestionResponse {
+    id: string
+    question: string
+    likeCount: number
+    isAnswered: boolean
+    date: Date
+}
 export {
     Option,
     Slide,
@@ -81,10 +96,12 @@ export {
     IHeadingSlide,
     IParagraphSlide,
     IMultipleChoiceSlide,
-    PresentationResponse,
-    SlideResponse,
     IMultipleChoiceSlideResponse,
     IHeadingSlideResponse,
     IParagraphSlideResponse,
+    PresentationResponse,
+    SlideResponse,
     OptionResponse,
+    QnAQuestionResponse,
+    QnAQuestion,
 }

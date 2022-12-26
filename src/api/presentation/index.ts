@@ -70,6 +70,9 @@ router.post(
 )
 router.get('/chat/messages/:presentationCode', presentationController.getMessages)
 
+router.post('/qna/add-anonymous-question', presentationController.addAnonymousQnAQuestion)
+router.get('/qna/get-question-list/:presentationCode', presentationController.getQnaQuestionList)
+router.put('/qna/update-question/:presentationCode', presentationController.updateQnAQuestion)
 router.get(
     '/collaborators/:presentationId',
     passport.authenticate('jwt', { session: false }),
