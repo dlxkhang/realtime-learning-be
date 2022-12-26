@@ -1,3 +1,4 @@
+import mongoose, { Error, PipelineStage } from 'mongoose'
 import { PRESENTATION_ERROR_CODE } from '../../common/error-code'
 import {
     Option,
@@ -6,7 +7,6 @@ import {
     Slide,
 } from '../../interfaces/presentation/presentation.interface'
 import presentationRepository from './presentation.repository'
-import { Error, PipelineStage } from 'mongoose'
 import userModel from '../user/model/user.model'
 import socketService from '../socket/socket.service'
 import { ChatEvent, PresentationEvent, QnAEvent } from '../socket/event'
@@ -384,6 +384,7 @@ class PresentationService {
                 throw PRESENTATION_ERROR_CODE.PRESENTATION_NOT_FOUND
             }
 
+            qnaQuestion._id = new mongoose.Types.ObjectId().toString()
             const updatePresentation = await this.repository.findOneAndUpdate(
                 { inviteCode: presentationCode },
                 {
@@ -393,10 +394,12 @@ class PresentationService {
 
             if (updatePresentation) {
                 // Announce to clients
+                const responseQnaQuestion = { ...qnaQuestion, id: qnaQuestion._id.toString() }
+                delete responseQnaQuestion._id
                 socketService.broadcastToRoom(
                     updatePresentation.inviteCode,
                     QnAEvent.NEW_QNA_QUESTION,
-                    qnaQuestion,
+                    responseQnaQuestion,
                 )
             }
             return updatePresentation.qnaQuestionList
@@ -475,20 +478,22 @@ class PresentationService {
             if (!presentation) {
                 throw PRESENTATION_ERROR_CODE.PRESENTATION_NOT_FOUND
             }
-
+            const qnaQuestionId = new mongoose.Types.ObjectId(qnaQuestion._id)
             const updatePresentation = await this.repository.findOneAndUpdate(
-                { inviteCode: presentationCode },
+                { inviteCode: presentationCode, 'qnaQuestionList._id': qnaQuestionId },
                 {
-                    $push: { qnaQuestionList: qnaQuestion },
+                    $set: { 'qnaQuestionList.$': qnaQuestion },
                 },
             )
 
             if (updatePresentation) {
+                const responseQnaQuestion = { ...qnaQuestion, id: qnaQuestion._id.toString() }
+                delete responseQnaQuestion._id
                 // Announce to clients
                 socketService.broadcastToRoom(
                     updatePresentation.inviteCode,
                     QnAEvent.UPDATE_QNA_QUESTION,
-                    qnaQuestion,
+                    responseQnaQuestion,
                 )
             }
             return updatePresentation.qnaQuestionList

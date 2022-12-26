@@ -6,6 +6,8 @@ import {
     Presentation,
     Slide,
     OptionResponse,
+    QnAQuestion,
+    QnAQuestionResponse,
 } from '../../interfaces/presentation/presentation.interface'
 import { mapTo as userMapper } from '../user/mapper'
 const mapToSlideListResponse = (presentation: Presentation): SlideResponse[] => {
@@ -51,4 +53,21 @@ const mapToPresentationListResponse = (
     return presentationList.map(mapToPresentationResponse)
 }
 
-export { mapToPresentationResponse, mapToSlideResponse, mapToSlideListResponse }
+const mapToQnAQuestionResponse = (questions: QnAQuestion[]): QnAQuestionResponse[] => {
+    return questions.map((question) => {
+        return {
+            id: question._id,
+            question: question.question,
+            likeCount: question.likeCount,
+            isAnswered: question.isAnswered,
+            date: question.date,
+        }
+    })
+}
+
+export {
+    mapToPresentationResponse,
+    mapToSlideResponse,
+    mapToSlideListResponse,
+    mapToQnAQuestionResponse,
+}

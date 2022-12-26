@@ -8,8 +8,14 @@ import {
     QnAQuestion,
     Slide,
 } from '../../interfaces/presentation/presentation.interface'
-import { mapToPresentationResponse, mapToSlideResponse, mapToSlideListResponse } from './mapper'
+import {
+    mapToPresentationResponse,
+    mapToSlideResponse,
+    mapToSlideListResponse,
+    mapToQnAQuestionResponse,
+} from './mapper'
 import { IMessage } from '../../interfaces/message/message.interface'
+import mongoose from 'mongoose'
 
 export default {
     createPresentation: controllerWrapper(async (event: IEvent) => {
@@ -153,7 +159,7 @@ export default {
             presentationCode,
             anonymousQuestion,
         )
-        return questions
+        return mapToQnAQuestionResponse(questions)
     }),
 
     getQnaQuestionList: controllerWrapper(async (event: IEvent) => {
@@ -163,12 +169,17 @@ export default {
             page,
             pageSize,
         })
-        return questions
+        return mapToQnAQuestionResponse(questions)
     }),
 
-    updateQnAQuestionLikeCount: controllerWrapper(async (event: IEvent) => {
-        const { presentationCode, qnaQuestion } = event.body
+    updateQnAQuestion: controllerWrapper(async (event: IEvent) => {
+        const { presentationCode } = event.params
+        const qnaQuestion = event.body
+        if (qnaQuestion.id) {
+            qnaQuestion._id = qnaQuestion.id
+            delete qnaQuestion.id
+        }
         const questions = await presentationService.updateQnAQuestion(presentationCode, qnaQuestion)
-        return questions
+        return mapToQnAQuestionResponse(questions)
     }),
 }

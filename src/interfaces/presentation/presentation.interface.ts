@@ -1,4 +1,4 @@
-import { Types } from 'mongoose'
+import mongoose, { Types } from 'mongoose'
 import { IMessage } from '../message/message.interface'
 import { IUser } from '../user'
 interface Option {
@@ -49,7 +49,14 @@ interface OptionResponse {
 }
 
 interface QnAQuestion {
-    id?: string
+    _id?: string
+    question: string
+    likeCount: number
+    isAnswered: boolean
+    date: Date
+}
+interface QnAQuestionResponse {
+    id: string
     question: string
     likeCount: number
     isAnswered: boolean
@@ -62,5 +69,6 @@ export {
     PresentationResponse,
     SlideResponse,
     OptionResponse,
+    QnAQuestionResponse,
     QnAQuestion,
 }
