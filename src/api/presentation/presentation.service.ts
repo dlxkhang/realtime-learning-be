@@ -15,6 +15,7 @@ import socketService from '../socket/socket.service'
 import { ChatEvent, PresentationEvent, QnAEvent } from '../socket/event'
 import { IMessage } from '../../interfaces/message/message.interface'
 import { IUser } from '../../interfaces'
+import { mapToSlideResponse } from './mapper'
 
 class PresentationService {
     private repository: typeof presentationRepository
@@ -214,7 +215,7 @@ class PresentationService {
 
         // Broadcast the results to all users watching the slide
         socketService.broadcastToRoom(presentationCode, PresentationEvent.UPDATE_RESULTS, {
-            slide,
+            slide: mapToSlideResponse(modifiedPresentation.slideList[presentation.currentSlide]),
         })
         return modifiedPresentation
     }
@@ -280,11 +281,16 @@ class PresentationService {
             )
 
             if (!updatePresentation.isPresenting) {
-                console.log('Emit end presenting', updatePresentation.inviteCode)
                 // Announce client that the presentation has stopped
                 socketService.broadcastToRoom(
                     updatePresentation.inviteCode,
                     PresentationEvent.END_PRESENTING,
+                )
+            } else if (presentation.currentSlide !== updatePresentation.currentSlide) {
+                // Announce client that the current presenting slide is changed
+                socketService.broadcastToRoom(
+                    updatePresentation.inviteCode,
+                    PresentationEvent.PRESENTING_SLIDE_CHANGED,
                 )
             }
             return updatePresentation.slideList[updatePresentation.currentSlide]
@@ -650,9 +656,7 @@ class PresentationService {
                     },
                 },
             })
-            console.log('pipeline', JSON.stringify(pipeline))
             const presentations = await this.repository.aggregate(pipeline)
-            console.log('Presentations', presentations)
             const qnaQuestionList = presentations?.[0]?.qnaQuestionList ?? []
             return qnaQuestionList
         } catch (e) {
