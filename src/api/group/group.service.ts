@@ -228,7 +228,11 @@ class GroupService {
         if (!group) {
             throw GROUP_ERROR_CODE.GROUP_NOT_FOUND
         }
-        return group.members.includes(memberId)
+        return (
+            group.members.includes(memberId.toString()) ||
+            group.owner.toString() === memberId.toString() ||
+            group.coOwners.includes(memberId.toString())
+        )
     }
     async startPresenting(groupId: string, presentationId: string): Promise<IGroupDTO> {
         console.log('Start Presenting For Groups')
