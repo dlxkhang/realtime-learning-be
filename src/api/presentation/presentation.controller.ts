@@ -189,7 +189,7 @@ export default {
             await groupService.stopPresentingForGroups(presentationId)
         } else {
             // start presenting
-            if (access === Access.ONLY_GROUP) {
+            if (access && access === Access.ONLY_GROUP) {
                 if (!presentTo) throw PRESENTATION_ERROR_CODE.MISSING_PRESENT_TO
                 console.log('Start presenting', access, presentTo)
                 const groupId = presentTo
