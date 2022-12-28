@@ -20,6 +20,7 @@ class mailService {
         try {
             const res = await sgMail.send(msg)
         } catch (err) {
+            console.log('err: ', err.response.body.errors);
             if (err.response && err.response.body) throw new Error(err.response.body.errors)
             throw GENERAL_ERROR_CODE.MAIL_SERVICE_ERROR
         }

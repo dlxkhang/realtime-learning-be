@@ -110,6 +110,18 @@ class AuthController {
             )
         }
     }
+
+    async resetPassword(req: Request, res: Response) {
+        try {
+            const { email } = req.body
+            const status = await authService.resetPassword(email)
+            res.json(status)
+        } catch (err) {
+            res.status(err.statusCode ? err.statusCode : 500).send(
+                err.statusCode ? err.message : 'Internal Server Error',
+            )
+        }
+    }
 }
 
 export default new AuthController()
