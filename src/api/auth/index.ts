@@ -11,4 +11,5 @@ router.post('/login-by-google', authController.googeLogin)
 router.post('/login', passport.authenticate('local', { session: false }), authController.login)
 router.post('/refresh', authController.refreshAccessToken)
 router.post('/log-out', passport.authenticate('jwt', { session: false }), authController.logOut)
+router.post('/forgot-password', authController.resetPassword)
 export default router
