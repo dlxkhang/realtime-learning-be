@@ -108,3 +108,6 @@ dist
 #lock file
 .lock
 .vscode
+# file: ~/.gitignore_global
+.DS_Store
+.idea

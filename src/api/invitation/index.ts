@@ -24,4 +24,22 @@ router.post(
     invitationController.acceptInvitation,
 )
 
+router.post(
+    '/presentation/create-email-invitations',
+    passport.authenticate('jwt', { session: false }),
+    invitationController.createPresentationInvitation,
+)
+
+router.get(
+    '/presentation/:id',
+    passport.authenticate('jwt', { session: false }),
+    invitationController.getPresentationInvitation,
+)
+
+router.post(
+    '/presentation/accept-invitation',
+    passport.authenticate('jwt', { session: false }),
+    invitationController.acceptPresentationInvitation,
+)
+
 export default router

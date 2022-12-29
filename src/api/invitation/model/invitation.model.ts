@@ -4,6 +4,8 @@ import { InvitationType } from '../../../common/enum'
 import { IInvitation } from '../../../interfaces'
 import Group from '../../group/group.model'
 import User from '../../user/model/user.model'
+import Presentation from '../../presentation/presentation.model'
+
 const { Schema } = mongoose
 
 const Invitation = new Schema<IInvitation>(
@@ -14,7 +16,9 @@ const Invitation = new Schema<IInvitation>(
 
         inviteeEmail: { type: String },
 
-        group: { type: Schema.Types.ObjectId, required: true, ref: Group.modelName },
+        group: { type: Schema.Types.ObjectId, ref: Group.modelName },
+
+        presentation: { type: Schema.Types.ObjectId, ref: Presentation.modelName },
 
         invitationExpireAt: { type: Date, default: dayjs().add(1, 'days') },
     },

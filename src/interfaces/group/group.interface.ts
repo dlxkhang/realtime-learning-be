@@ -5,6 +5,7 @@ interface IBaseGroup {
     description?: string
     avatar?: string
     background?: string
+    presenting?: string
 }
 interface IGroupGeneral extends IBaseGroup {
     id: string

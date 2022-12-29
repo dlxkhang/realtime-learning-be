@@ -1,7 +1,7 @@
 import http from 'http'
 import { Server } from 'socket.io'
 import { corsOptions } from '../../config'
-import { SocketEvent } from './event'
+import { PresentationEvent } from './event'
 
 class SocketService {
     private io: Server
@@ -13,7 +13,7 @@ class SocketService {
         this.io.on('connection', (socket) => {
             socket.on('disconnecting', () => {})
 
-            socket.on(SocketEvent.JOIN_ROOM, (message) => {
+            socket.on(PresentationEvent.JOIN_ROOM, (message) => {
                 const { roomId } = message
                 socket.join(`${roomId}`)
             })

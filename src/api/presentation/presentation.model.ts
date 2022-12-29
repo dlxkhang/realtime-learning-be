@@ -1,16 +1,28 @@
 import mongoose from 'mongoose'
-import { Option, Presentation, Slide } from '../../interfaces/presentation/presentation.interface'
-import userModel from '../user/model/user.model'
+import {
+    IHeadingSlide,
+    IMultipleChoiceSlide,
+    IParagraphSlide,
+    Presentation,
+    Slide,
+} from '../../interfaces'
+
 const { Schema } = mongoose
-const Option = new Schema<Option>({
-    answer: { type: String, required: true },
-    votes: { type: Number },
+const Slide = new Schema<IHeadingSlide | IMultipleChoiceSlide | IParagraphSlide>({
+    type: { type: String },
+    text: { type: String },
+    optionList: [{ type: Schema.Types.Mixed }],
+    heading: { type: String },
+    subHeading: { type: String },
+    paragraph: { type: String },
+})
+const QnAQuestion = new Schema({
+    question: { type: String, required: true },
+    likeCount: { type: Number, default: 0 },
+    isAnswered: { type: Boolean, default: false },
+    date: { type: Date, default: Date.now },
 })
 
-const Slide = new Schema<Slide>({
-    text: { type: String },
-    optionList: [{ type: Option }],
-})
 const Presentation = new Schema<Presentation>({
     name: { type: String },
     description: { type: String },
@@ -19,6 +31,9 @@ const Presentation = new Schema<Presentation>({
     currentSlide: { type: Number },
     inviteCode: { type: String },
     slideList: [{ type: Slide }],
+    messages: [{ type: Schema.Types.Mixed }],
+    collaborators: [{ type: Schema.Types.ObjectId, default: [], ref: 'User' }],
+    qnaQuestionList: [{ type: QnAQuestion }],
 })
 
 export default mongoose.model('Presentations', Presentation)
