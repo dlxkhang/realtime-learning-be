@@ -24,5 +24,21 @@ class Template {
         }
         return msg
     }
+
+    presentationInvitationEmail(
+        to: string,
+        inviterName: string,
+        presentationName: string,
+        invitationLink: string,
+    ) {
+        const msg = {
+            to: to,
+            from: ENV.SENDGRID_SENDER,
+            subject: 'Invite To Presentation',
+            text: `You are invited to collaborate ${presentationName} by ${inviterName}`,
+            html: `<a href="${invitationLink}">Join Presentation</a>`,
+        }
+        return msg
+    }
 }
 export default new Template()

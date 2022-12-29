@@ -15,6 +15,7 @@ const mapFrom = (group: IGroup): IGroupDTO => {
         owner: group.owner?._id,
         coOwners: group?.coOwners.map((coOwner) => coOwner?._id) ?? [],
         deleted: false,
+        presenting: group?.presenting,
     }
 }
 const mapToGeneral = async (group: IGroupDTO): Promise<IGroupGeneral> => {
@@ -25,6 +26,7 @@ const mapToGeneral = async (group: IGroupDTO): Promise<IGroupGeneral> => {
         description: group?.description,
         avatar: group?.avatar,
         background: group?.background,
+        presenting: group?.presenting,
         owner: new RoleImpl(owner, Role.ADMINISTRATOR).getMember(),
     }
 }
@@ -40,6 +42,7 @@ const mapToDetail = async (group: IGroupDTO): Promise<IGroup> => {
         avatar: group?.avatar,
         background: group?.background,
         owner: owner ? new RoleImpl(owner, Role.ADMINISTRATOR).getMember() : undefined,
+        presenting: group?.presenting,
         members: members.map((member) => new RoleImpl(member, Role.MEMBER).getMember()),
         coOwners: coOwners.map((coOwner) =>
             new RoleImpl(coOwner, Role.CO_ADMINISTRATOR).getMember(),

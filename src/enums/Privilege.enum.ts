@@ -5,5 +5,7 @@ enum Privilege {
     REVOKING = 'revoking',
     KICKING = 'kicking',
     INVITING = 'inviting',
+    PRESENTING = 'presenting',
+    VIEWING = 'viewing',
 }
 export default Privilege

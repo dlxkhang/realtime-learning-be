@@ -27,5 +27,8 @@ class GroupRepository {
     async deleteById(groupId: string): Promise<IGroupDTO> {
         return await groupModel.findByIdAndUpdate(groupId, { deleted: true }, { new: true })
     }
+    async find(query: any): Promise<IGroupDTO[]> {
+        return await groupModel.find(query)
+    }
 }
 export default GroupRepository

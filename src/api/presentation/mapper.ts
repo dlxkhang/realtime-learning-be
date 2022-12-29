@@ -1,4 +1,5 @@
 import { Types } from 'mongoose'
+import { SlideType } from '../../enums'
 import {
     PresentationResponse,
     SlideResponse,
@@ -8,11 +9,16 @@ import {
     OptionResponse,
     QnAQuestion,
     QnAQuestionResponse,
+    IMultipleChoiceSlide,
+    IMultipleChoiceSlideResponse,
+    IHeadingSlide,
+    IHeadingSlideResponse,
+    IParagraphSlide,
+    IParagraphSlideResponse,
 } from '../../interfaces/presentation/presentation.interface'
 import { mapTo as userMapper } from '../user/mapper'
-const mapToSlideListResponse = (presentation: Presentation): SlideResponse[] => {
-    const slideList = presentation.slideList.map(mapToSlideResponse)
-    return slideList
+const mapToSlideListResponse = (slideList: Slide[]): SlideResponse[] => {
+    return slideList.map(mapToSlideResponse)
 }
 const mapToPresentationResponse = (presentation: Presentation): PresentationResponse => {
     let transformedCreateBy
@@ -20,6 +26,10 @@ const mapToPresentationResponse = (presentation: Presentation): PresentationResp
         transformedCreateBy = userMapper(presentation.createBy as any)
     }
 
+    let transformedSlideList
+    if (presentation.slideList) {
+        transformedSlideList = mapToSlideListResponse(presentation.slideList)
+    }
     return {
         id: presentation._id,
         name: presentation.name,
@@ -27,17 +37,47 @@ const mapToPresentationResponse = (presentation: Presentation): PresentationResp
         createBy: transformedCreateBy,
         isPresenting: presentation.isPresenting,
         currentSlide: presentation.currentSlide,
-        slideList: mapToSlideListResponse(presentation),
+        slideList: transformedSlideList,
         inviteCode: presentation.inviteCode,
     }
 }
 const mapToSlideResponse = (slide: Slide): SlideResponse => {
-    const optionListResponse = slide.optionList.map(mapToOptionResponse)
-    return {
+    let response: SlideResponse = {
         id: slide._id,
-        text: slide.text,
-        optionList: optionListResponse,
+        type: slide.type,
     }
+    switch (slide.type) {
+        case SlideType.MULTIPLE_CHOICE:
+            const multipleChoiceSlide: IMultipleChoiceSlide = slide as IMultipleChoiceSlide
+            const optionList = multipleChoiceSlide?.optionList?.map((option) =>
+                mapToOptionResponse(option),
+            )
+            response = {
+                ...response,
+                text: multipleChoiceSlide.text,
+                optionList: optionList,
+            } as IMultipleChoiceSlideResponse
+            break
+        case SlideType.HEADING:
+            const headingSlide: IHeadingSlide = slide as IHeadingSlide
+            response = {
+                ...response,
+                heading: headingSlide.heading,
+                subHeading: headingSlide.subHeading,
+            } as IHeadingSlideResponse
+            break
+        case SlideType.PARAGRAPH:
+            const paragraphSlide: IParagraphSlide = slide as IParagraphSlide
+            response = {
+                ...response,
+                heading: paragraphSlide.heading,
+                paragraph: paragraphSlide.paragraph,
+            } as IParagraphSlideResponse
+            break
+        default:
+            break
+    }
+    return response
 }
 const mapToOptionResponse = (option: Option): OptionResponse => {
     return {
@@ -45,12 +85,6 @@ const mapToOptionResponse = (option: Option): OptionResponse => {
         answer: option.answer,
         votes: option.votes,
     }
-}
-// map to list of presentation response
-const mapToPresentationListResponse = (
-    presentationList: Presentation[],
-): PresentationResponse[] => {
-    return presentationList.map(mapToPresentationResponse)
 }
 
 const mapToQnAQuestionResponse = (questions: QnAQuestion[]): QnAQuestionResponse[] => {

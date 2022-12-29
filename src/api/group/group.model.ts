@@ -14,6 +14,7 @@ const Group = new Schema<IGroupDTO>(
         owner: { type: String, required: true },
         coOwners: [{ type: String, required: true }],
         deleted: { type: Boolean, required: true, default: false },
+        presenting: { type: String, required: false },
     },
     {
         // assign createAt and updateAt fields to Schema

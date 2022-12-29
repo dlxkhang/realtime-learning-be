@@ -10,7 +10,9 @@ export interface IInvitation {
 
     inviteeEmail: string
 
-    group: Types.ObjectId
+    group?: Types.ObjectId
+
+    presentation?: Types.ObjectId
 
     invitationExpireAt: Date
 }

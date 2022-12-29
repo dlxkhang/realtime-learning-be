@@ -44,6 +44,11 @@ router.put(
 )
 router.post('/slide/update-answer', presentationController.updateAnswer)
 router.get('/slide/get/:presentationCode', presentationController.getPresentingSlide)
+router.get(
+    '/slide/get/:presentationCode/:groupId',
+    passport.authenticate('jwt', { session: false }),
+    presentationController.getPresentingSlide,
+)
 // get list of presentation by user id
 router.get(
     '/get-all',
@@ -51,7 +56,11 @@ router.get(
     presentationController.getPresentationListByUserId,
 )
 
-router.post('/slide/update-present-status', presentationController.updatePresentStatus)
+router.post(
+    '/slide/update-present-status',
+    passport.authenticate('jwt', { session: false }),
+    presentationController.updatePresentStatus,
+)
 
 router.post('/chat/add-anonymous-message', presentationController.addAnonymousMessage)
 router.post(
@@ -64,4 +73,27 @@ router.get('/chat/messages/:presentationCode', presentationController.getMessage
 router.post('/qna/add-anonymous-question', presentationController.addAnonymousQnAQuestion)
 router.get('/qna/get-question-list/:presentationCode', presentationController.getQnaQuestionList)
 router.put('/qna/update-question/:presentationCode', presentationController.updateQnAQuestion)
+router.get(
+    '/collaborators/:presentationId',
+    passport.authenticate('jwt', { session: false }),
+    presentationController.getCollaborators,
+)
+
+router.delete(
+    '/delete/collaborator/:presentationId&:collaboratorId',
+    passport.authenticate('jwt', { session: false }),
+    presentationController.removeCollaborator,
+)
+
+router.get(
+    '/collaborated',
+    passport.authenticate('jwt', { session: false }),
+    presentationController.getCollaboratedPresentations,
+)
+
+router.get(
+    '/participated',
+    passport.authenticate('jwt', { session: false }),
+    presentationController.getParticipatedPresentations,
+)
 export default router

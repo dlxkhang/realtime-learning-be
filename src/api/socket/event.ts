@@ -3,6 +3,7 @@ export enum PresentationEvent {
     UPDATE_RESULTS = 'update-results',
     START_PRESENTING = 'start-presenting',
     END_PRESENTING = 'end-presenting',
+    NEW_PRESENTING_IN_GROUP = 'new-presenting-in-group',
 }
 
 export enum ChatEvent {

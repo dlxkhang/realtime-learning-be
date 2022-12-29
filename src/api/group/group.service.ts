@@ -2,7 +2,7 @@ import { IUser } from './../../interfaces/user/user.interface'
 import { GROUP_ERROR_CODE } from '../../common/error-code'
 import { IGroupDTO } from '../../interfaces'
 import GroupRepository from './group.repository'
-import { Role } from '../../enums'
+import { Privilege, Role } from '../../enums'
 class GroupService {
     private repository: GroupRepository
 
@@ -106,6 +106,45 @@ class GroupService {
         const groups: IGroupDTO[] = await this.repository.getGroupByOwner(ownerId)
         return groups
     }
+    async getGroupHasCoOwner(coOwnerId: string): Promise<IGroupDTO[]> {
+        const pipeline = [
+            {
+                $match: {
+                    deleted: false,
+                },
+            },
+            {
+                $addFields: {
+                    coOwnerId: '$coOwners',
+                },
+            },
+            {
+                $unwind: {
+                    path: '$coOwnerId',
+                    preserveNullAndEmptyArrays: true,
+                },
+            },
+            {
+                $match: {
+                    coOwners: coOwnerId.toString(),
+                },
+            },
+            {
+                $group: {
+                    _id: '$_id',
+                    name: { $first: '$name' },
+                    description: { $first: '$description' },
+                    avatar: { $first: '$avatar' },
+                    background: { $first: '$background' },
+                    owner: { $first: '$owner' },
+                    members: { $first: '$members' },
+                    coOwners: { $first: '$coOwners' },
+                },
+            },
+        ]
+        const groups: IGroupDTO[] = await this.repository.aggregate(pipeline)
+        return groups
+    }
 
     async addMemberToGroup(groupId: string, memberId: string): Promise<IGroupDTO> {
         const group: IGroupDTO = await this.repository.getGroupById(groupId)
@@ -190,6 +229,31 @@ class GroupService {
             throw GROUP_ERROR_CODE.GROUP_NOT_FOUND
         }
         return group.members.includes(memberId)
+    }
+    async startPresenting(groupId: string, presentationId: string): Promise<IGroupDTO> {
+        console.log('Start Presenting For Groups')
+        const group: IGroupDTO = await this.repository.getGroupById(groupId)
+        if (!group) {
+            throw GROUP_ERROR_CODE.GROUP_NOT_FOUND
+        }
+        if (group.presenting) {
+            throw GROUP_ERROR_CODE.ALREADY_HAS_PRESENTING_SLIDE
+        } else {
+            group.presenting = presentationId
+        }
+        return await this.repository.updateById(groupId, group)
+    }
+    async stopPresentingForGroups(presentationId: string) {
+        console.log('Stop Presenting For Groups')
+        const groups: IGroupDTO[] = await this.repository.find({
+            presenting: presentationId,
+        })
+        console.log('groups', groups)
+        if (!groups || groups.length === 0) return
+        for (const group of groups) {
+            group.presenting = ''
+            await this.repository.updateById(group._id, group)
+        }
     }
 }
 export default new GroupService()
