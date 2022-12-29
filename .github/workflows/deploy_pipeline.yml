@@ -1,0 +1,35 @@
+name: Deployment pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize]
+
+jobs:
+  deployment_pipeline:
+    runs-on: ubuntu-18.04
+    env: 
+      SKIP_PREFLIGHT_CHECK: true
+      DATABASE: ${{ secrets.DATABASE }} 
+      PORT: ${{secrets.PORT}}
+      SESSION_SECRET: ${{secrets.SESSION_SECRET}}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: "12.x"
+      - name: npm install
+        run: npm install 
+     
+      - name: Build & push Docker image
+        if: ${{ github.event_name == 'push'  && !contains(join(github.event.commits.*.message, ' '), '#skip') }}
+        uses: mr-smithers-excellent/docker-build-push@v5
+        with:
+          image: ndthi/realtime-learning-be
+          registry: docker.io
+          dockerfile: dockerfile
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
