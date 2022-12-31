@@ -5,13 +5,23 @@ import {
     IParagraphSlide,
     Presentation,
     Slide,
-    Option
+    Option,
+    AnswerInfo,
 } from '../../interfaces'
 const { Schema } = mongoose
+
+const AnswerInfo = new Schema(
+    {
+        userId: { type: Schema.Types.ObjectId, ref: 'User' },
+        answeredAt: { type: Date },
+    },
+    { _id: false },
+)
 
 const Option = new Schema<Option>({
     answer: { type: String, required: true },
     votes: { type: Number },
+    answerInfos: [{ type: AnswerInfo }],
 })
 
 const Slide = new Schema<IHeadingSlide | IMultipleChoiceSlide | IParagraphSlide>({

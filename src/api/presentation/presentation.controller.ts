@@ -25,6 +25,7 @@ import {
     mapToSlideResponse,
     mapToSlideListResponse,
     mapToQnAQuestionResponse,
+    mapToAnswerInfoResponse,
 } from './mapper'
 import { IMessage } from '../../interfaces/message/message.interface'
 import mongoose from 'mongoose'
@@ -150,6 +151,7 @@ export default {
     getPresentingSlide: controllerWrapper(async (event: IEvent) => {
         const { presentationCode, groupId } = event.params
         const user = event.user
+        
         if (groupId && user?._id) {
             const group = await groupService.getGroup(groupId)
             if (!group) {
@@ -314,5 +316,30 @@ export default {
         }
         const questions = await presentationService.updateQnAQuestion(presentationCode, qnaQuestion)
         return mapToQnAQuestionResponse(questions)
+    }),
+
+    updateGroupAnswer: controllerWrapper(async (event: IEvent) => {
+        const { presentationCode, optionId, groupId } = event.body
+        const { _id } = event.user
+        const modifiedPresentation = await presentationService.updateGroupAnswer(
+            presentationCode,
+            optionId,
+            groupId,
+            _id,
+        )
+        if (!modifiedPresentation) return { ok: false }
+        else return { ok: true }
+    }),
+
+    getUserAnswers: controllerWrapper(async (event: IEvent) => {
+        const { slideId, optionId } = event.params
+        const { skip, limit } = event.query
+        const { _id } = event.user
+        const answerInfos = await presentationService.getUserAnswer(slideId, optionId, _id, {
+            skip,
+            limit,
+        })
+        console.log('answerInfos: ', answerInfos);
+        return mapToAnswerInfoResponse(answerInfos)
     }),
 }

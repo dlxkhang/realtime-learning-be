@@ -195,6 +195,10 @@ export const PRESENTATION_ERROR_CODE = {
         statusCode: 400,
         message: 'Missing group that presentation will be presented to',
     },
+    ALREADY_ANSWERED: {
+        statusCode: 400,
+        message: 'User has already answered',
+    },
 }
 export const GENERAL_ERROR_CODE = {
     UNKNOWN_ERROR: {

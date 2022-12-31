@@ -189,4 +189,13 @@ export default {
             groups: groupsGeneral,
         }
     }),
+    getRole: controllerWrapper(async (event: IEvent) => {
+        const { groupId } = event.params
+        const user = event.user
+        const userRole = await groupService.roleOf(user, groupId)
+
+        return {
+            role: userRole,
+        }
+    }),
 }
