@@ -84,7 +84,6 @@ export default {
     }),
 
     getSlideList: controllerWrapper(async (event: IEvent) => {
-        console.log('event', event.params)
         const presentationId = event.params.presentationId
         const { page, pageSize } = event.query
         const presentation = await presentationService.getById(presentationId)
@@ -193,14 +192,12 @@ export default {
             // start presenting
             if (access && access === Access.ONLY_GROUP) {
                 if (!presentTo) throw PRESENTATION_ERROR_CODE.MISSING_PRESENT_TO
-                console.log('Start presenting', access, presentTo)
                 const groupId = presentTo
                 const group = await groupService.getGroup(groupId)
                 if (!group) {
                     throw GROUP_ERROR_CODE.GROUP_NOT_FOUND
                 }
                 const role = await groupService.roleOf(user, groupId)
-                console.log('role', role)
                 const userRole = new RoleImpl(user, role)
                 if (!userRole.hasPermission(Privilege.PRESENTING)) {
                     throw PRESENTATION_ERROR_CODE.NOT_HAVING_PERMISSION
@@ -339,7 +336,6 @@ export default {
             skip,
             limit,
         })
-        console.log('answerInfos: ', answerInfos);
         return mapToAnswerInfoResponse(answerInfos)
     }),
 }

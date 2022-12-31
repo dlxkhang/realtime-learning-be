@@ -9,7 +9,6 @@ import { Role, Privilege } from '../../enums'
 export default {
     createGroup: controllerWrapper(async (event: IEvent) => {
         const { _id } = event.user
-        console.log('user', _id)
         const { name, description, avatar, background } = event.body
         const group: IGroupDTO = await groupService.createGroup(_id, {
             groupName: name,
@@ -45,7 +44,6 @@ export default {
             if (background) {
                 updatedGroup['background'] = background
             }
-            console.log('updatedGroup', updatedGroup)
             const group: IGroupDTO = await groupService.editGroup(groupId, updatedGroup)
             const groupGeneral: IGroupGeneral = await mapToGeneral(group)
             return groupGeneral
@@ -163,7 +161,6 @@ export default {
         const { privileges } = event.body
         const user = event.user
         const roles: Role[] = RoleImpl.getRole(privileges)
-        console.log('roles', roles)
         const isChecked = {
             [Role.ADMINISTRATOR]: false,
             [Role.CO_ADMINISTRATOR]: false,
