@@ -25,6 +25,7 @@ import {
     mapToSlideResponse,
     mapToSlideListResponse,
     mapToQnAQuestionResponse,
+    mapToAnswerInfoResponse,
 } from './mapper'
 import { IMessage } from '../../interfaces/message/message.interface'
 import mongoose from 'mongoose'
@@ -83,7 +84,6 @@ export default {
     }),
 
     getSlideList: controllerWrapper(async (event: IEvent) => {
-        console.log('event', event.params)
         const presentationId = event.params.presentationId
         const { page, pageSize } = event.query
         const presentation = await presentationService.getById(presentationId)
@@ -150,6 +150,7 @@ export default {
     getPresentingSlide: controllerWrapper(async (event: IEvent) => {
         const { presentationCode, groupId } = event.params
         const user = event.user
+        
         if (groupId && user?._id) {
             const group = await groupService.getGroup(groupId)
             if (!group) {
@@ -191,14 +192,12 @@ export default {
             // start presenting
             if (access && access === Access.ONLY_GROUP) {
                 if (!presentTo) throw PRESENTATION_ERROR_CODE.MISSING_PRESENT_TO
-                console.log('Start presenting', access, presentTo)
                 const groupId = presentTo
                 const group = await groupService.getGroup(groupId)
                 if (!group) {
                     throw GROUP_ERROR_CODE.GROUP_NOT_FOUND
                 }
                 const role = await groupService.roleOf(user, groupId)
-                console.log('role', role)
                 const userRole = new RoleImpl(user, role)
                 if (!userRole.hasPermission(Privilege.PRESENTING)) {
                     throw PRESENTATION_ERROR_CODE.NOT_HAVING_PERMISSION
@@ -314,5 +313,29 @@ export default {
         }
         const questions = await presentationService.updateQnAQuestion(presentationCode, qnaQuestion)
         return mapToQnAQuestionResponse(questions)
+    }),
+
+    updateGroupAnswer: controllerWrapper(async (event: IEvent) => {
+        const { presentationCode, optionId, groupId } = event.body
+        const { _id } = event.user
+        const modifiedPresentation = await presentationService.updateGroupAnswer(
+            presentationCode,
+            optionId,
+            groupId,
+            _id,
+        )
+        if (!modifiedPresentation) return { ok: false }
+        else return { ok: true }
+    }),
+
+    getUserAnswers: controllerWrapper(async (event: IEvent) => {
+        const { slideId, optionId } = event.params
+        const { skip, limit } = event.query
+        const { _id } = event.user
+        const answerInfos = await presentationService.getUserAnswer(slideId, optionId, _id, {
+            skip,
+            limit,
+        })
+        return mapToAnswerInfoResponse(answerInfos)
     }),
 }

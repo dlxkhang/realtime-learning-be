@@ -15,6 +15,8 @@ import {
     IHeadingSlideResponse,
     IParagraphSlide,
     IParagraphSlideResponse,
+    AnswerInfoResponse,
+    AnswerInfo,
 } from '../../interfaces/presentation/presentation.interface'
 import { mapTo as userMapper } from '../user/mapper'
 const mapToSlideListResponse = (slideList: Slide[]): SlideResponse[] => {
@@ -80,11 +82,44 @@ const mapToSlideResponse = (slide: Slide): SlideResponse => {
     return response
 }
 const mapToOptionResponse = (option: Option): OptionResponse => {
+    let answerInfos: AnswerInfoResponse[] = []
+    if (option.answerInfos)
+        answerInfos = option.answerInfos.map((answerInfo) => {
+            let transformedUser
+            if (!((answerInfo.userId as any) instanceof Types.ObjectId)) {
+                transformedUser = userMapper(answerInfo.userId as any)
+                return {
+                    user: transformedUser,
+                    answeredAt: answerInfo.answeredAt,
+                }
+            }
+            return {
+                user: undefined,
+                ...answerInfo
+            }
+        })
     return {
         id: option._id,
         answer: option.answer,
         votes: option.votes,
+        answerInfos,
     }
+}
+
+const mapToAnswerInfoResponse = (answerInfos: AnswerInfo[]): AnswerInfoResponse[] => {
+    let answerInfosResponse: AnswerInfoResponse[] = []
+    if (answerInfos)
+        answerInfosResponse = answerInfos.map((answerInfo) => {
+            let transformedUser
+            if (!((answerInfo.userId as any) instanceof Types.ObjectId)) {
+                transformedUser = userMapper(answerInfo.userId as any)
+            }
+            return {
+                user: transformedUser,
+                answeredAt: answerInfo.answeredAt,
+            }
+        })
+    return answerInfosResponse
 }
 
 const mapToQnAQuestionResponse = (questions: QnAQuestion[]): QnAQuestionResponse[] => {
@@ -104,4 +139,5 @@ export {
     mapToSlideResponse,
     mapToSlideListResponse,
     mapToQnAQuestionResponse,
+    mapToAnswerInfoResponse
 }

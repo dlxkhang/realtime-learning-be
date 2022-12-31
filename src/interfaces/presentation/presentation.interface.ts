@@ -2,10 +2,16 @@ import { Types } from 'mongoose'
 import { SlideType } from '../../enums'
 import { IMessage } from '../message/message.interface'
 import { IUser } from '../user'
+
+interface AnswerInfo {
+    userId: string
+    answeredAt: Date
+}
 interface Option {
     _id: string
     answer: string
     votes: number
+    answerInfos: AnswerInfo[]
 }
 interface Slide {
     _id?: string
@@ -69,10 +75,16 @@ interface IParagraphSlideResponse extends SlideResponse {
     paragraph: string
 }
 
+interface AnswerInfoResponse {
+    user: IUser
+    answeredAt: Date
+}
+
 interface OptionResponse {
     id: string
     answer: string
     votes: Number
+    answerInfos: AnswerInfoResponse[]
 }
 
 interface QnAQuestion {
@@ -104,4 +116,6 @@ export {
     OptionResponse,
     QnAQuestionResponse,
     QnAQuestion,
+    AnswerInfoResponse,
+    AnswerInfo
 }

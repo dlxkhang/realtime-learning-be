@@ -54,4 +54,10 @@ router.delete(
     passport.authenticate('jwt', { session: false }),
     groupController.deleteGroup,
 )
+
+router.get(
+    '/role/:groupId',
+    passport.authenticate('jwt', { session: false }),
+    groupController.getRole,
+)
 export default router

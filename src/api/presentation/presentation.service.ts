@@ -1,6 +1,11 @@
 import { SlideType } from '../../enums'
-import { PRESENTATION_ERROR_CODE } from '../../common/error-code'
 import {
+    GENERAL_ERROR_CODE,
+    GROUP_ERROR_CODE,
+    PRESENTATION_ERROR_CODE,
+} from '../../common/error-code'
+import {
+    AnswerInfo,
     IHeadingSlide,
     IMultipleChoiceSlide,
     IParagraphSlide,
@@ -16,6 +21,8 @@ import { ChatEvent, PresentationEvent, QnAEvent } from '../socket/event'
 import { IMessage } from '../../interfaces/message/message.interface'
 import { IUser } from '../../interfaces'
 import { mapToSlideResponse } from './mapper'
+import dayjs from 'dayjs'
+import groupService from '../group/group.service'
 
 class PresentationService {
     private repository: typeof presentationRepository
@@ -694,6 +701,116 @@ class PresentationService {
                 )
             }
             return updatePresentation.qnaQuestionList
+        } catch (e) {
+            if (e instanceof Error.CastError) {
+                throw PRESENTATION_ERROR_CODE.PRESENTATION_INVALID_ID
+            } else throw e
+        }
+    }
+
+    async updateGroupAnswer(
+        presentationCode: string,
+        optionId: string,
+        groupId: string,
+        userId: string,
+    ) {
+        const isMemberOfGroup = await groupService.isMemberOfGroup(groupId, userId)
+        if (!isMemberOfGroup) throw GROUP_ERROR_CODE.MEMBER_NOT_IN_GROUP
+
+        const presentation = await this.repository.getPresentationByCode(presentationCode)
+        if (!presentation) {
+            throw PRESENTATION_ERROR_CODE.PRESENTATION_NOT_FOUND
+        }
+        const slide = presentation.slideList[presentation.currentSlide]
+        if (!slide) {
+            throw PRESENTATION_ERROR_CODE.SLIDE_NOT_FOUND
+        }
+        if (slide.type != SlideType.MULTIPLE_CHOICE) {
+            throw PRESENTATION_ERROR_CODE.INVALID_SLIDE_TYPE
+        }
+        const multipleChoiceSlide = slide as IMultipleChoiceSlide
+        const option: Option = multipleChoiceSlide.optionList.find(
+            (option) => option._id.toString() === optionId,
+        )
+        if (!option) {
+            throw PRESENTATION_ERROR_CODE.OPTION_NOT_FOUND
+        }
+
+        const answer = option.answerInfos.find(
+            (answer) => answer.userId.toString() === userId.toString(),
+        )
+        if (answer) throw PRESENTATION_ERROR_CODE.ALREADY_ANSWERED
+
+        option.answerInfos.push({ userId: userId.toString(), answeredAt: dayjs().toDate() })
+        option.votes += 1
+
+        const modifiedPresentation = await this.repository.editById(presentation._id, presentation)
+
+        // Broadcast the results to all users watching the slide
+        socketService.broadcastToRoom(presentationCode, PresentationEvent.UPDATE_RESULTS, {
+            slide: mapToSlideResponse(modifiedPresentation.slideList[presentation.currentSlide]),
+        })
+        return modifiedPresentation
+    }
+
+    async getUserAnswer(
+        slideId: string,
+        optionId: string,
+        userId: string,
+        options: { limit?: number; skip?: number } = {},
+    ): Promise<AnswerInfo[]> {
+        try {
+            const parsedLimit = options.limit ? parseInt(options.limit.toString()) : undefined
+            const parsedSkip = options.skip ? parseInt(options.skip.toString()) : undefined
+
+            const presentation = await this.repository.findOne(
+                {
+                    slideList: {
+                        $elemMatch: {
+                            _id: slideId,
+                            optionList: {
+                                $elemMatch: {
+                                    _id: optionId,
+                                },
+                            },
+                        },
+                    },
+                },
+                {},
+                {
+                    populate: [
+                        {
+                            path: 'slideList',
+                            populate: {
+                                path: 'optionList',
+                                populate: {
+                                    path: 'answerInfos',
+                                    populate: {
+                                        path: 'userId',
+                                        select: 'fullName avatar email',
+                                        options: {
+                                            skip: parsedSkip,
+                                            limit: parsedLimit,
+                                            lean: true,
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    ],
+                },
+            )
+            if (!presentation) {
+                throw PRESENTATION_ERROR_CODE.PRESENTATION_NOT_FOUND
+            }
+
+            const resultSlide = presentation.slideList.find(
+                (slide) => slide._id.toString() === slideId.toString(),
+            ) as IMultipleChoiceSlide
+            const resultOption = resultSlide.optionList.find(
+                (option) => option._id.toString() === optionId.toString(),
+            )
+            return resultOption.answerInfos
         } catch (e) {
             if (e instanceof Error.CastError) {
                 throw PRESENTATION_ERROR_CODE.PRESENTATION_INVALID_ID

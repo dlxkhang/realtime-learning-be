@@ -96,4 +96,15 @@ router.get(
     passport.authenticate('jwt', { session: false }),
     presentationController.getParticipatedPresentations,
 )
+
+router.post(
+    '/slide/update-group-answer',
+    passport.authenticate('jwt', { session: false }),
+    presentationController.updateGroupAnswer,
+)
+router.get(
+    '/slide/user-answers/:slideId&:optionId',
+    passport.authenticate('jwt', { session: false }),
+    presentationController.getUserAnswers,
+)
 export default router

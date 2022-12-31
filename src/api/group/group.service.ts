@@ -49,7 +49,6 @@ class GroupService {
     async editGroup(groupId: string, groupUpdated?: any): Promise<IGroupDTO> {
         const group: IGroupDTO = await this.repository.getGroupById(groupId)
         if (!group) {
-            console.log('Group not found')
             throw GROUP_ERROR_CODE.GROUP_NOT_FOUND
         }
         const updatedGroup = await this.repository.updateById(groupId, groupUpdated)
@@ -176,8 +175,6 @@ class GroupService {
         if (group.coOwners.includes(memberId)) {
             throw GROUP_ERROR_CODE.CANNOT_REMOVE_CO_OWNER
         }
-        console.log('memberId', memberId)
-        console.log('group.members', group.members)
         if (!group.members.includes(memberId)) {
             throw GROUP_ERROR_CODE.MEMBER_NOT_IN_GROUP
         }
@@ -217,7 +214,6 @@ class GroupService {
     async deleteGroup(groupId: string): Promise<IGroupDTO> {
         const group: IGroupDTO = await this.repository.getGroupById(groupId)
         if (!group) {
-            console.log('Group not found')
             throw GROUP_ERROR_CODE.GROUP_NOT_FOUND
         }
         return await this.repository.deleteById(groupId)
@@ -235,7 +231,6 @@ class GroupService {
         )
     }
     async startPresenting(groupId: string, presentationId: string): Promise<IGroupDTO> {
-        console.log('Start Presenting For Groups')
         const group: IGroupDTO = await this.repository.getGroupById(groupId)
         if (!group) {
             throw GROUP_ERROR_CODE.GROUP_NOT_FOUND
@@ -248,11 +243,9 @@ class GroupService {
         return await this.repository.updateById(groupId, group)
     }
     async stopPresentingForGroups(presentationId: string) {
-        console.log('Stop Presenting For Groups')
         const groups: IGroupDTO[] = await this.repository.find({
             presenting: presentationId,
         })
-        console.log('groups', groups)
         if (!groups || groups.length === 0) return
         for (const group of groups) {
             group.presenting = ''
