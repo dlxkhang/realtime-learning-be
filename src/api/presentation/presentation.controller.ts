@@ -150,7 +150,7 @@ export default {
     getPresentingSlide: controllerWrapper(async (event: IEvent) => {
         const { presentationCode, groupId } = event.params
         const user = event.user
-        
+
         if (groupId && user?._id) {
             const group = await groupService.getGroup(groupId)
             if (!group) {

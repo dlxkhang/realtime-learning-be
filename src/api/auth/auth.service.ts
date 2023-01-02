@@ -157,7 +157,7 @@ class AuthService {
         session.startTransaction()
         try {
             const hashPassword = await bcrypt.hash(newPassword, 10)
-            
+
             await mailService.send(Template.resetPassword(email, newPassword))
 
             await user.updateOne(

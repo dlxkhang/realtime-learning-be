@@ -95,7 +95,7 @@ const mapToOptionResponse = (option: Option): OptionResponse => {
             }
             return {
                 user: undefined,
-                ...answerInfo
+                ...answerInfo,
             }
         })
     return {
@@ -139,5 +139,5 @@ export {
     mapToSlideResponse,
     mapToSlideListResponse,
     mapToQnAQuestionResponse,
-    mapToAnswerInfoResponse
+    mapToAnswerInfoResponse,
 }

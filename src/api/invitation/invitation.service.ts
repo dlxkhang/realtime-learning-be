@@ -198,8 +198,8 @@ class InvitationService {
 
         const owner = presentation.createBy as IUser
         if (owner._id.toString() !== inviterId.toString())
-        throw INVITATION_ERROR_CODE.UNAUTHORIZED_INVITER
-        
+            throw INVITATION_ERROR_CODE.UNAUTHORIZED_INVITER
+
         const session = await invitationModel.startSession()
         session.startTransaction()
         await Promise.all(

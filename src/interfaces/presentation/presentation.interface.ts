@@ -117,5 +117,5 @@ export {
     QnAQuestionResponse,
     QnAQuestion,
     AnswerInfoResponse,
-    AnswerInfo
+    AnswerInfo,
 }
