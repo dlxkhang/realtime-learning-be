@@ -14,6 +14,7 @@ import mailService from '../../utils/mail.util'
 import Template from '../../common/templates'
 import jwtDecode from 'jwt-decode'
 import { use } from 'passport'
+import { randomPassword } from '../../utils/auth.util'
 
 class AuthService {
     async register(registerDto: RegisterDTO) {
@@ -23,7 +24,7 @@ class AuthService {
         if (existedUser) throw USER_ERROR_CODE.EMAIL_ALREADY_EXIST
         const emailToken = crypto.lib.WordArray.random(32).toString()
 
-        // await mailService.send(Template.verificationEmail(emailToken, registerDto.email))
+        await mailService.send(Template.verificationEmail(emailToken, registerDto.email))
         return userService.createUser({
             ...registerDto,
             password: registerDto.password
@@ -143,6 +144,43 @@ class AuthService {
         }
         await mailService.send(Template.verificationEmail(newToken, unVerifiedUser.email))
         return unVerifiedUser
+    }
+
+    async resetPassword(email: string): Promise<{ ok: boolean }> {
+        // Check if user already exists
+        const user = await userService.getUserByEmail(email)
+
+        if (!user) throw USER_ERROR_CODE.EMAIL_NOT_FOUND
+        const newPassword = randomPassword()
+
+        const session = await userModel.startSession()
+        session.startTransaction()
+        try {
+            const hashPassword = await bcrypt.hash(newPassword, 10)
+
+            await mailService.send(Template.resetPassword(email, newPassword))
+
+            await user.updateOne(
+                {
+                    $set: {
+                        password: hashPassword,
+                    },
+                },
+                { session },
+            )
+
+            await session.commitTransaction()
+            session.endSession()
+        } catch (error) {
+            // console.log('error: ', error.);
+            // If an error occurred, abort the whole transaction and
+            // undo any changes that might have happened
+            await session.abortTransaction()
+            session.endSession()
+
+            throw error
+        }
+        return { ok: true }
     }
 }
 

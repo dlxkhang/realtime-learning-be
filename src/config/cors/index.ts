@@ -9,6 +9,8 @@ export const corsOptions = {
         'https://realtime-learning-fe-test.vercel.app',
         'https://realtime-learning-fe-ga03.onrender.com',
         'https://realtime-learning-fe-main.onrender.com',
+        'http://localhost:80',
+        'https://realtime-learning-be.azurewebsites.net',
     ],
     methods: 'GET, POST, PUT, DELETE',
     credentials: true,

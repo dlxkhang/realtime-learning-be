@@ -40,5 +40,16 @@ class Template {
         }
         return msg
     }
+
+    resetPassword(to: string, newPassword: string) {
+        const msg = {
+            to: `${to}`, // Change to your recipient
+            from: ENV.SENDGRID_SENDER, // Change to your verified sender
+            subject: 'Reset Password',
+            text: `Here is your new password: ${newPassword}, please use this to login and change it later`,
+            html: `Here is your new password: ${newPassword}, please use this to login and change it later`,
+        }
+        return msg
+    }
 }
 export default new Template()
