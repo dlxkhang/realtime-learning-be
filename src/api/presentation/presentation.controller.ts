@@ -49,12 +49,12 @@ export default {
 
     editPresentationById: controllerWrapper(async (event: IEvent) => {
         const presentationId = event.params.id
-        const createBy = event.user._id.toString()
+        // const createBy = event.user._id.toString()
         const { name, description } = event.body
         const modifiedPresentation = await presentationService.editById(presentationId, {
             name,
             description,
-            createBy,
+            // createBy,
         } as Presentation)
         return mapToPresentationResponse(modifiedPresentation)
     }),
