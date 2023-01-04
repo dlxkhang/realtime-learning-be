@@ -16,7 +16,6 @@ const ROLE: {
     [Role.CO_ADMINISTRATOR]: [
         Privilege.EDITING,
         Privilege.KICKING,
-        Privilege.REVOKING,
         Privilege.INVITING,
         Privilege.PRESENTING,
         Privilege.VIEWING,
